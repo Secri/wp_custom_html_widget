@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // sécurité : pas d'accès direct au fichi
  * Ordre de chargement : 
  *
  * 1 - admin-menu.php (définit chtw_get_settings_page_hook_suffix() utilisée par enqueue.php, code-editor.php et term-select.php)
- * 2 - settings.php (nécessaire à settings-page-template.php pour chtw_get_blocks.php)
+ * 2 - settings.php (nécessaire à settings-page-template.php pour chtw_get_blocks())
  * ---------------------------------------------------------------------- */
 
 require_once plugin_dir_path( __FILE__ ) . 'admin/admin-menu.php';
