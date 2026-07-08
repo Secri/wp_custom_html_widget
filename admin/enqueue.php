@@ -47,7 +47,7 @@ function chtw_enqueue_admin_assets( $hook_suffix ) {
 		true // chargé en pied de page
 	);
 
-	// Transmission de Label vers field-repeater.js dans un objectif de traduction
+	// Transmission des labels vers field-repeater.js dans un objectif de traduction
 	wp_localize_script(
 		'chtw-field-repeater', 
 		'chtwRepeaterData', //Nom de la variable globale qui sera envoyée au fichier JS
