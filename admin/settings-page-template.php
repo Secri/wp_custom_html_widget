@@ -228,7 +228,7 @@ function chtw_render_settings_page() {
 		-->
 		<template id="chtw-block-template">
 			<?php
-			echo chtw_render_block_row( array( // phpcs:ignore -- déjà échappé champ par champ
+			echo chtw_render_block_row( array(
 				'id'       => '',
 				'html'     => '',
 				'taxonomy' => '',
