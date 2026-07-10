@@ -1,26 +1,21 @@
 /**
  * term-select-init.js
  *
- * Rôle unique de ce fichier : initialiser Select2 (avec recherche AJAX
- * paginée) sur les champs .chtw-term-select, à la fois ceux présents au
- * chargement de la page et ceux ajoutés dynamiquement par field-repeater.js
- * (via l'événement custom 'chtw:block-added').
+ * Rôle unique de ce fichier : initialiser Select2 (avec recherche AJAX paginée) sur les champs .chtw-term-select, à la fois ceux présents au chargement de la page et ceux ajoutés dynamiquement par field-repeater.js
  *
- * Le select des termes est scopé dynamiquement à la taxonomie choisie dans
- * le .chtw-taxonomy-select adjacent (même bloc) : changer de taxonomie vide
- * la sélection de termes en cours et re-scope les recherches suivantes.
+ * Le select des termes est scopé dynamiquement à la taxonomie choisie dans le .chtw-taxonomy-select adjacent (même bloc) : changer de taxonomie vide la sélection de termes en cours et re-scope les recherches suivantes.
  *
  * Dépend de :
  * - jQuery (natif WordPress admin)
  * - Select2 (assets/vendor/select2/, enqueue dans term-select.php)
- * - window.chtwTermSelectData (injecté par wp_localize_script() dans term-select.php)
+ * - window.chtwTermSelectData (injecté par wp_localize_script() depuis term-select.php)
  */
 
-( function ( $ ) {
-	'use strict';
+( function ( $ ) { // Immediatly Invoked Function Expression qui prend jQuery en paramètre (voir dernière ligne du cript window.jQuery)
+	'use strict'; //On active le mode strict de Javascript
 
-	if ( 'undefined' === typeof $ || ! $.fn.select2 || 'undefined' === typeof chtwTermSelectData ) {
-		return; // Select2 ou ses données de config ne sont pas disponibles
+	if ( 'undefined' === typeof $ || ! $.fn.select2 || 'undefined' === typeof chtwTermSelectData ) { //Si jQuery n'est pas chargé OU si select2 n'est pas chargé OU si chtwTermSelectData n'est pas envoyé par term-select.php
+		return; // Select2 ou ses données de config ne sont pas disponibles, on ne fait rien.
 	}
 
 	/**
@@ -31,42 +26,42 @@
 	 * @param {HTMLSelectElement} selectElement
 	 */
 	function initSelect2On( selectElement ) {
-		const $select = $( selectElement );
+		const $select = $( selectElement ); //Enveloppe le <select> reçu en paramètre dans un objet jQuery
 
 		if ( $select.hasClass( 'chtw-select2-initialized' ) ) {
-			return; // déjà initialisé
+			return; // déjà initialisé donc on ne fait rien
 		}
 
-		const $row            = $select.closest( '.chtw-accordion' );
-		const $taxonomySelect = $row.find( '.chtw-taxonomy-select' );
+		const $row            = $select.closest( '.chtw-accordion' ); //Récupère le premier ancètre
+		const $taxonomySelect = $row.find( '.chtw-taxonomy-select' ); //On target le <select> de la taxonomie (PAS le <select> des termes !)
 
-		$select.select2( {
+		$select.select2( { //Options de paramétrage du Select2
 			width: '100%',
 			placeholder: chtwTermSelectData.searchPlaceholder,
 			allowClear: true,
 			minimumInputLength: 0, // liste initiale visible dès l'ouverture, avant même de taper une recherche
 			ajax: {
-				url: chtwTermSelectData.ajaxUrl,
+				url: chtwTermSelectData.ajaxUrl, //défini dans term-select.php et envoyée via wp_localize-script - la propriété ajaxUrl stocke l'endpoint vers lequel on envoie la requête
 				dataType: 'json',
-				delay: 250, // évite une requête à chaque frappe, attend une courte pause
+				delay: 250, // en milliseconde pour ne pas envoyer de requête à chaque frappe
 				data: ( params ) => ( {
-					action: 'chtw_search_terms',
-					nonce: chtwTermSelectData.nonce,
-					taxonomy: $taxonomySelect.val(),
-					q: params.term || '',
+					action: 'chtw_search_terms', //Appelle le hook wp_ajax_chtw_search_terms (term-select.php) et execute la fonction chtw_handle_term_search_request()
+					nonce: chtwTermSelectData.nonce, //Le nonce contenu dans la variable globale
+					taxonomy: $taxonomySelect.val(), //la taxonomie sélectionnée dans le bloc
+					q: params.term || '', //le texte tapé
 					page: params.page || 1
 				} ),
 				processResults: ( response ) => {
-					if ( ! response?.success ) {
+					if ( ! response?.success ) { //opérateur de chaïnage optionnel, assigne success si response n'est ni null ni undefinded
 						return { results: [] };
 					}
-					return response.data; // déjà au format { results: [...], pagination: { more } } attendu par Select2
+					return response.data; // au format { results: [...], pagination: { more } } attendu par Select2
 				},
 				cache: true
 			}
 		} );
 
-		$select.addClass( 'chtw-select2-initialized' );
+		$select.addClass( 'chtw-select2-initialized' ); //On ajouter cette classe pour identifier les elements pour lesquels le Select2 est activé
 
 		// Tant qu'aucune taxonomie n'est choisie, le select de termes reste
 		// désactivé : chercher un terme sans savoir dans quelle taxonomie
