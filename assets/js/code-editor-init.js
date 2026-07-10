@@ -45,7 +45,7 @@
 
 		// 2. Nouveaux blocs ajoutés dynamiquement par field-repeater.js.
 		document.addEventListener( 'chtw:block-added', function ( event ) {
-			const blockElement = event.detail?.blockElement;
+			const blockElement = event.detail?.blockElement; //Opérateur de chaînage optionnel : assigne blockElement à la variable seilement si event.detail n'est ni null ni undefined
 			if ( ! blockElement ) {
 				return;
 			}
