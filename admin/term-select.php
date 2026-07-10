@@ -28,7 +28,7 @@ add_action( 'admin_enqueue_scripts', 'chtw_enqueue_term_select' );
 add_action( 'wp_ajax_chtw_search_terms', 'chtw_ajax_search_terms' ); //Sera déclenché par admin-ajax.php lorsqu'un fichier JS enverra le paramètre action chtw_search_terms
 
 /**
- * Enqueue Select2 (JS + CSS, embarqués localement) et le script d'init dédié, uniquement sur la page de settings du plugin.
+ * Enqueue Select2 (JS + CSS) et le script d'init dédié, uniquement sur la page de settings du plugin.
  *
  * @param string $hook_suffix Fourni par WordPress : le hook suffix de la page admin courante.
  */
