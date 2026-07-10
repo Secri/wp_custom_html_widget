@@ -1,1 +1,110 @@
+/**
+ * admin-style.css
+ *
+ * Styles de la page de settings du plugin. Volontairement sobre : mise en
+ * page fonctionnelle (accordéon, espacements, lisibilité des champs), pas
+ * d'effets visuels ni de personnalisation esthétique poussée.
+ */
 
+.chtw-settings-wrap {
+	max-width: 900px;
+}
+
+/* ------------------------------------------------------------------
+ * Bloc / accordéon
+ * ------------------------------------------------------------------ */
+
+.chtw-block-row {
+	border: 1px solid #ccd0d4;
+	background: #fff;
+	margin-bottom: 12px;
+}
+
+.chtw-accordion-header {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 10px 12px;
+	cursor: pointer;
+	background: #f6f7f7;
+	border-bottom: 1px solid #ccd0d4;
+}
+
+.chtw-accordion-header:focus {
+	outline: 2px solid #2271b1;
+	outline-offset: -2px;
+}
+
+.chtw-accordion-toggle-icon {
+	font-size: 11px;
+	width: 1em;
+	flex-shrink: 0;
+}
+
+.chtw-block-title-display {
+	flex-grow: 1;
+	margin: 0;
+	font-size: 14px;
+	font-weight: 600;
+}
+
+.chtw-accordion-body {
+	padding: 16px;
+}
+
+/* Masqué par défaut : field-repeater.js bascule ce style au clic sur l'en-tête. */
+.chtw-accordion-body {
+	display: none;
+}
+
+/* ------------------------------------------------------------------
+ * Champs de formulaire à l'intérieur d'un bloc
+ * ------------------------------------------------------------------ */
+
+.chtw-block-row-header,
+.chtw-block-row-targeting,
+.chtw-block-row-content {
+	margin-bottom: 16px;
+}
+
+.chtw-block-row-targeting {
+	display: flex;
+	gap: 24px;
+	flex-wrap: wrap;
+}
+
+.chtw-block-row-targeting label {
+	flex: 1 1 260px;
+}
+
+.chtw-accordion-body label {
+	display: block;
+	font-weight: 600;
+	margin-bottom: 4px;
+}
+
+.chtw-accordion-body input[type="text"],
+.chtw-accordion-body select,
+.chtw-accordion-body textarea {
+	display: block;
+	width: 100%;
+	font-weight: normal;
+}
+
+.chtw-html-editor {
+	font-family: Consolas, Monaco, monospace;
+	font-size: 13px;
+}
+
+/* ------------------------------------------------------------------
+ * Divers
+ * ------------------------------------------------------------------ */
+
+.chtw-no-blocks {
+	font-style: italic;
+	color: #646970;
+}
+
+#chtw-blocks-list {
+	margin-bottom: 16px;
+}
