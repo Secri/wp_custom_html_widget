@@ -11,7 +11,7 @@
  * - window.chtwTermSelectData (injecté par wp_localize_script() depuis term-select.php)
  */
 
-( function ( $ ) { // Immediatly Invoked Function Expression qui prend jQuery en paramètre (voir dernière ligne du cript window.jQuery)
+( function ( $ ) { // Immediatly Invoked Function Expression qui prend jQuery en paramètre (voir dernière ligne du cript window.jQuery) => on s'assure que $ désignera toujours JQuery à l'intérieur de l'IIFE
 	'use strict'; //On active le mode strict de Javascript
 
 	if ( 'undefined' === typeof $ || ! $.fn.select2 || 'undefined' === typeof chtwTermSelectData ) { //Si jQuery n'est pas chargé OU si select2 n'est pas chargé OU si chtwTermSelectData n'est pas envoyé par term-select.php
