@@ -24,13 +24,14 @@
 	// distinguer les nouveaux blocs ENTRE EUX le temps de la session en cours,
 	// pas à générer l'id définitif ('widget_N'), qui est attribué côté PHP
 	// uniquement à la sauvegarde (cf chtw_sanitize_blocks() dans settings.php).
-	var newBlockCounter = 0;
+	// let, pas const : cette variable est réassignée à chaque ajout de bloc.
+	let newBlockCounter = 0;
 
-	document.addEventListener( 'DOMContentLoaded', function () {
+	document.addEventListener( 'DOMContentLoaded', () => {
 
-		var blocksList  = document.getElementById( 'chtw-blocks-list' );
-		var addButton   = document.getElementById( 'chtw-add-block' );
-		var template    = document.getElementById( 'chtw-block-template' );
+		const blocksList = document.getElementById( 'chtw-blocks-list' );
+		const addButton  = document.getElementById( 'chtw-add-block' );
+		const template   = document.getElementById( 'chtw-block-template' );
 
 		if ( ! blocksList || ! addButton || ! template ) {
 			return; // page pas dans l'état attendu, on n'installe aucun handler
@@ -41,8 +42,8 @@
 		 *    pour couvrir aussi les blocs ajoutés dynamiquement)
 		 * ---------------------------------------------------------- */
 
-		blocksList.addEventListener( 'click', function ( event ) {
-			var header = event.target.closest( '.chtw-accordion-header' );
+		blocksList.addEventListener( 'click', ( event ) => {
+			const header = event.target.closest( '.chtw-accordion-header' );
 			if ( ! header ) {
 				return;
 			}
@@ -55,8 +56,8 @@
 		} );
 
 		// Accessibilité clavier : Entrée / Espace sur l'en-tête doit aussi togglé.
-		blocksList.addEventListener( 'keydown', function ( event ) {
-			var header = event.target.closest( '.chtw-accordion-header' );
+		blocksList.addEventListener( 'keydown', ( event ) => {
+			const header = event.target.closest( '.chtw-accordion-header' );
 			if ( ! header ) {
 				return;
 			}
@@ -67,11 +68,11 @@
 		} );
 
 		function toggleAccordion( header ) {
-			var row  = header.closest( '.chtw-accordion' );
-			var body = row.querySelector( '.chtw-accordion-body' );
-			var icon = header.querySelector( '.chtw-accordion-toggle-icon' );
+			const row  = header.closest( '.chtw-accordion' );
+			const body = row.querySelector( '.chtw-accordion-body' );
+			const icon = header.querySelector( '.chtw-accordion-toggle-icon' );
 
-			var isExpanded = 'true' === header.getAttribute( 'aria-expanded' );
+			const isExpanded = 'true' === header.getAttribute( 'aria-expanded' );
 
 			header.setAttribute( 'aria-expanded', isExpanded ? 'false' : 'true' );
 			body.style.display = isExpanded ? 'none' : '';
@@ -87,11 +88,11 @@
 		 * (ajout, suppression, déplacement) puisque les extrémités changent.
 		 */
 		function refreshMoveButtonsState() {
-			var rows = blocksList.querySelectorAll( '.chtw-accordion' );
+			const rows = blocksList.querySelectorAll( '.chtw-accordion' );
 
-			rows.forEach( function ( row, index ) {
-				var upButton   = row.querySelector( '.chtw-move-block-up' );
-				var downButton = row.querySelector( '.chtw-move-block-down' );
+			rows.forEach( ( row, index ) => {
+				const upButton   = row.querySelector( '.chtw-move-block-up' );
+				const downButton = row.querySelector( '.chtw-move-block-down' );
 
 				if ( upButton ) {
 					upButton.disabled = ( 0 === index );
@@ -110,16 +111,16 @@
 		 *    d'événement, pour couvrir aussi les blocs ajoutés dynamiquement)
 		 * ---------------------------------------------------------- */
 
-		blocksList.addEventListener( 'input', function ( event ) {
+		blocksList.addEventListener( 'input', ( event ) => {
 			if ( ! event.target.classList.contains( 'chtw-block-title-field' ) ) {
 				return;
 			}
-			var row     = event.target.closest( '.chtw-accordion' );
-			var display = row.querySelector( '.chtw-block-title-display' );
+			const row     = event.target.closest( '.chtw-accordion' );
+			const display = row.querySelector( '.chtw-block-title-display' );
 			if ( ! display ) {
 				return;
 			}
-			var value = event.target.value.trim();
+			const value = event.target.value.trim();
 			display.textContent = '' !== value ? value : chtwRepeaterData.noTitleLabel;
 		} );
 
@@ -127,19 +128,19 @@
 		 * 3. Suppression d'un bloc (avec confirmation, délégation d'événement)
 		 * ---------------------------------------------------------- */
 
-		blocksList.addEventListener( 'click', function ( event ) {
-			var removeButton = event.target.closest( '.chtw-remove-block' );
+		blocksList.addEventListener( 'click', ( event ) => {
+			const removeButton = event.target.closest( '.chtw-remove-block' );
 			if ( ! removeButton ) {
 				return;
 			}
 			event.preventDefault();
 
-			var confirmed = window.confirm( chtwRepeaterData.confirmRemoveLabel );
+			const confirmed = window.confirm( chtwRepeaterData.confirmRemoveLabel );
 			if ( ! confirmed ) {
 				return;
 			}
 
-			var row = removeButton.closest( '.chtw-accordion' );
+			const row = removeButton.closest( '.chtw-accordion' );
 			if ( row ) {
 				row.parentNode.removeChild( row );
 			}
@@ -155,10 +156,10 @@
 		 * changer son ordre d'affichage, sans logique PHP supplémentaire.
 		 * ---------------------------------------------------------- */
 
-		blocksList.addEventListener( 'click', function ( event ) {
+		blocksList.addEventListener( 'click', ( event ) => {
 
-			var moveUpButton = event.target.closest( '.chtw-move-block-up' );
-			var moveDownButton = event.target.closest( '.chtw-move-block-down' );
+			const moveUpButton   = event.target.closest( '.chtw-move-block-up' );
+			const moveDownButton = event.target.closest( '.chtw-move-block-down' );
 
 			if ( ! moveUpButton && ! moveDownButton ) {
 				return;
@@ -172,18 +173,18 @@
 				return;
 			}
 
-			var row = ( moveUpButton || moveDownButton ).closest( '.chtw-accordion' );
+			const row = ( moveUpButton || moveDownButton ).closest( '.chtw-accordion' );
 			if ( ! row ) {
 				return;
 			}
 
 			if ( moveUpButton ) {
-				var previousRow = row.previousElementSibling;
+				const previousRow = row.previousElementSibling;
 				if ( previousRow ) {
 					blocksList.insertBefore( row, previousRow );
 				}
 			} else {
-				var nextRow = row.nextElementSibling;
+				const nextRow = row.nextElementSibling;
 				if ( nextRow ) {
 					blocksList.insertBefore( nextRow, row );
 				}
@@ -196,18 +197,18 @@
 		 * 4. Ajout d'un nouveau bloc (clonage du template)
 		 * ---------------------------------------------------------- */
 
-		addButton.addEventListener( 'click', function ( event ) {
+		addButton.addEventListener( 'click', ( event ) => {
 			event.preventDefault();
 
 			newBlockCounter += 1;
-			var tempId = 'new_' + newBlockCounter;
+			const tempId = 'new_' + newBlockCounter;
 
-			var fragment = template.content.cloneNode( true );
-			var newRow   = fragment.querySelector( '.chtw-accordion' );
+			const fragment = template.content.cloneNode( true );
+			const newRow   = fragment.querySelector( '.chtw-accordion' );
 
 			// Retire le message "Aucun bloc pour le moment" s'il est présent,
 			// devenu obsolète dès qu'un premier bloc est ajouté.
-			var emptyNotice = blocksList.querySelector( '.chtw-no-blocks' );
+			const emptyNotice = blocksList.querySelector( '.chtw-no-blocks' );
 			if ( emptyNotice ) {
 				emptyNotice.parentNode.removeChild( emptyNotice );
 			}
@@ -215,7 +216,7 @@
 			// Renseigne l'id temporaire dans le champ caché ET dans l'attribut
 			// data-block-id (utile pour le futur script Select2/CodeMirror qui
 			// aura besoin de cibler ce bloc précisément).
-			var idField = newRow.querySelector( '.chtw-block-id-field' );
+			const idField = newRow.querySelector( '.chtw-block-id-field' );
 			if ( idField ) {
 				idField.value = tempId;
 			}
@@ -224,12 +225,12 @@
 			// Le nouveau bloc apparaît déjà déplié, contrairement aux blocs
 			// existants (repliés par défaut) : l'utilisateur vient de cliquer
 			// sur "Ajouter", il s'apprête donc à le remplir immédiatement.
-			var header = newRow.querySelector( '.chtw-accordion-header' );
-			var body   = newRow.querySelector( '.chtw-accordion-body' );
+			const header = newRow.querySelector( '.chtw-accordion-header' );
+			const body   = newRow.querySelector( '.chtw-accordion-body' );
 			if ( header && body ) {
 				header.setAttribute( 'aria-expanded', 'true' );
 				body.style.display = '';
-				var icon = header.querySelector( '.chtw-accordion-toggle-icon' );
+				const icon = header.querySelector( '.chtw-accordion-toggle-icon' );
 				if ( icon ) {
 					icon.textContent = '▼';
 				}
