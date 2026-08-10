@@ -99,15 +99,15 @@
 			initSelect2On( this );
 		} );
 
-		// 2. Nouveaux blocs ajoutés dynamiquement par field-repeater.js.
-		document.addEventListener( 'chtw:block-added', ( event ) => {
-			const blockElement = event.detail?.blockElement;
+		// 2. Nouveau bloc ajouté dynamiquement par field-repeater.js
+		document.addEventListener( 'chtw:block-added', ( event ) => { //Ecoute l'événement chtw:block-added émis par field-repeater.js
+			const blockElement = event.detail?.blockElement; //event.detail.blockElement renvoie l'élément du DOM associé au nouveau bloc - Utilisation d'un opérateur de chaînage optionnel, si event.detail n'existe pas alors blockElement sera juste undefined, pas d'erreur JS qui arrrête le script.
 			if ( ! blockElement ) {
-				return;
+				return; //Du coup si blockElement est undefined, on arrête le script proprement et on ne fait rien de plus
 			}
 			const termSelect = blockElement.querySelector( '.chtw-term-select' );
-			if ( termSelect ) {
-				initSelect2On( termSelect );
+			if ( termSelect ) { //On vérifie que le block ajouté contient bien un <select class="chtw-term-select">
+				initSelect2On( termSelect ); //On lance l'initialisation du select2
 			}
 		} );
 
