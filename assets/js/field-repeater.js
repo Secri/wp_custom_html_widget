@@ -112,21 +112,21 @@
 		refreshMoveButtonsState();
 
 		/* ------------------------------------------------------------
-		 * 2. Synchronisation en direct du titre affiché (délégation
-		 *    d'événement, pour couvrir aussi les blocs ajoutés dynamiquement)
+		 * 2. Synchronisation en direct du titre affiché (élément <h3>) et de l'input modifiable
+		 * Délégation d'événement, pour couvrir aussi les blocs ajoutés dynamiquement
 		 * ---------------------------------------------------------- */
 
-		blocksList.addEventListener( 'input', ( event ) => {
-			if ( ! event.target.classList.contains( 'chtw-block-title-field' ) ) {
-				return;
+		blocksList.addEventListener( 'input', ( event ) => { //On met l'écouteur sur la liste des blocs pour faire de la délégation d'événements
+			if ( ! event.target.classList.contains( 'chtw-block-title-field' ) ) { //Si l'événement de saisie n'est pas dans l'<input> du titre du block
+				return; //On en fait rien
 			}
-			const row     = event.target.closest( '.chtw-accordion' );
-			const display = row.querySelector( '.chtw-block-title-display' );
-			if ( ! display ) {
+			const row     = event.target.closest( '.chtw-accordion' ); //On remonte dans le DOM pour retrouver l'ancètre dans lequel l'événement s'est produit
+			const display = row.querySelector( '.chtw-block-title-display' ); //On met l'élément <h3> (title display) dans une variable
+			if ( ! display ) { //Si l'élément n'existe pas
 				return;
 			}
 			const value = event.target.value.trim();
-			display.textContent = '' !== value ? value : chtwRepeaterData.noTitleLabel;
+			display.textContent = '' !== value ? value : chtwRepeaterData.noTitleLabel; //chtwRepeaterData.noTitleLabel vaut '(Block sans titre)', voir admin/enqueue.php
 		} );
 
 		/* ------------------------------------------------------------
