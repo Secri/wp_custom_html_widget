@@ -48,10 +48,10 @@
 					nonce: chtwTermSelectData.nonce, //Le nonce contenu dans la variable globale
 					taxonomy: $taxonomySelect.val(), //la taxonomie sélectionnée dans le bloc
 					q: params.term || '', //le texte tapé
-					page: params.page || 1
+					page: params.page || 1 //Gestion de la pagination (on ne charge qu'un certain nombre d'éléments définis dans term-select.php => 20)
 				} ),
 				processResults: ( response ) => {
-					if ( ! response?.success ) { //opérateur de chaïnage optionnel, assigne success si response n'est ni null ni undefinded
+					if ( ! response?.success ) { //opérateur de chaînage optionnel, assigne success si response n'est ni null ni undefinded
 						return { results: [] };
 					}
 					return response.data; // au format { results: [...], pagination: { more } } attendu par Select2
