@@ -68,7 +68,7 @@
 			const body = row.querySelector( '.chtw-accordion-body' );
 			const icon = header.querySelector( '.chtw-accordion-toggle-icon' );
 
-			const isExpanded = 'true' === header.getAttribute( 'aria-expanded' );
+			const isExpanded = 'true' === header.getAttribute( 'aria-expanded' ); //Subtilité liée à getAttribute() qui renvoie un string et non un booléen ! Le résultat de cette comparaison sera donc un booléen => True si aria-expanded="true" et False dans le cas contraire
 
 			header.setAttribute( 'aria-expanded', isExpanded ? 'false' : 'true' );
 			body.style.display = isExpanded ? 'none' : '';
