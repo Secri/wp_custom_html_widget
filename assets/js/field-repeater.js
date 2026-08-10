@@ -70,6 +70,7 @@
 
 			const isExpanded = 'true' === header.getAttribute( 'aria-expanded' ); //Subtilité liée à getAttribute() qui renvoie un string et non un booléen ! Le résultat de cette comparaison sera donc un booléen => True si aria-expanded="true" et False dans le cas contraire
 
+			//Toogle de l'accordéon ouvert /fermé
 			if ( isExpanded ) {
 				header.setAttribute( 'aria-expanded', 'false' );
 				body.style.display = 'none';
@@ -98,11 +99,11 @@
 				const upButton   = row.querySelector( '.chtw-move-block-up' );
 				const downButton = row.querySelector( '.chtw-move-block-down' );
 
-				if ( upButton ) {
-					upButton.disabled = ( 0 === index );
+				if ( upButton ) { //Défensif, on s'assure que upButton n'est pas nul avant d'agir
+					upButton.disabled = ( 0 === index ); //On vérifie si l'index de l'élément est le premier du tableau, si c'est le cas on disable le bouton up
 				}
-				if ( downButton ) {
-					downButton.disabled = ( index === rows.length - 1 );
+				if ( downButton ) { //Défensif, on s'assure que downButton n'est pas nul avant d'agir
+					downButton.disabled = ( index === rows.length - 1 ); //On vérifie si l'index de l'élément est le dernier du tableau, si c'est le cas on disable le bouton down
 				}
 			} );
 		}
