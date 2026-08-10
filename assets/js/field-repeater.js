@@ -21,8 +21,8 @@
 	// distinguer les nouveaux blocs ENTRE EUX le temps de la session en cours,
 	// pas à générer l'id définitif ('widget_N'), qui est attribué côté PHP
 	// uniquement à la sauvegarde (cf chtw_sanitize_blocks() dans settings.php).
-	// let, pas const : cette variable est réassignée à chaque ajout de bloc.
-	let newBlockCounter = 0;
+	
+	let newBlockCounter = 0; // on utilise let, cette variable est réassignée à chaque ajout de bloc.
 
 	document.addEventListener( 'DOMContentLoaded', () => {
 
