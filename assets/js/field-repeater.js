@@ -24,7 +24,7 @@
 	
 	let newBlockCounter = 0; // on utilise let, cette variable est réassignée à chaque ajout de bloc.
 
-	document.addEventListener( 'DOMContentLoaded', () => {
+	document.addEventListener( 'DOMContentLoaded', () => { //On s'assure que le DOM est bien chargé
 
 		const blocksList = document.getElementById( 'chtw-blocks-list' );
 		const addButton  = document.getElementById( 'chtw-add-block' );
