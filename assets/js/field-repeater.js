@@ -39,13 +39,12 @@
 		 *    pour couvrir aussi les blocs ajoutés dynamiquement)
 		 * ---------------------------------------------------------- */
 
-		blocksList.addEventListener( 'click', ( event ) => {
+		blocksList.addEventListener( 'click', ( event ) => { //On met l'écouteur sur toute la liste des blocks, on cible l'élément clilqué et on remonte jusqu'à l'accordéon parent
 			const header = event.target.closest( '.chtw-accordion-header' );
 			if ( ! header ) {
 				return;
 			}
-			// Un clic sur les boutons d'action de l'en-tête (supprimer, monter,
-			// descendre) ne doit pas aussi déclencher le toggle de l'accordéon.
+			// Un clic sur les boutons d'action de l'en-tête (supprimer, monter, descendre) ne doit pas aussi déclencher le toggle de l'accordéon !
 			if ( event.target.closest( '.chtw-remove-block, .chtw-move-block-up, .chtw-move-block-down' ) ) {
 				return;
 			}
