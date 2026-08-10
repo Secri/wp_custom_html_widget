@@ -11,6 +11,13 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit; // sécurité : pas d'accès direct au fichier
 
+/**
+ * Longueur maximale (en nombre de caractères) autorisée pour le titre d'un bloc. Utilisée à deux endroits qui doivent rester cohérents entre eux :
+ * - ici, comme troncature réelle à la sauvegarde (chtw_sanitize_blocks())
+ * - dans settings-page-template.php, comme attribut HTML maxlength sur le champ de saisie
+ */
+define( 'CHTW_BLOCK_TITLE_MAX_LENGTH', 100 );
+
 /* ------------------------------------------------------------------------
  * 1. Attribution des id définitifs aux nouveaux blocs (avant sanitization)
  *
@@ -136,7 +143,8 @@ function chtw_sanitize_blocks( $raw_blocks ) {
 
 		$include_children = ! empty( $raw_block['include_children'] ); // Inclusion des taxonomies enfants : Checkbox HTML classique - présente dans $_POST seulement si cochée
 
-		$title = isset( $raw_block['title'] ) ? sanitize_text_field( $raw_block['title'] ) : '';
+		// substr() après sanitize_text_field() : on nettoie d'abord les caractères indésirables, puis on tronque à la longueur maximale autorisée (cf CHTW_BLOCK_TITLE_MAX_LENGTH, cohérente avec le maxlength HTML posé sur le champ dans settings-page-template.php).
+		$title = isset( $raw_block['title'] ) ? substr( sanitize_text_field( $raw_block['title'] ), 0, CHTW_BLOCK_TITLE_MAX_LENGTH ) : '';
 
 		$html = isset( $raw_block['html'] ) ? chtw_sanitize_html_block( $raw_block['html'] ) : '';
 
