@@ -88,7 +88,7 @@
 		$termSelect.prop( 'disabled', ! hasTaxonomy );
 	}
 
-	$( function () {
+	$( function () { //Equivalent à document.addEventListener('DOMContentLoaded', ...)
 
 		// 1. Blocs déjà présents au chargement de la page.
 		// Note : function() classique volontairement conservée ici (pas de
