@@ -7,12 +7,9 @@
  * - Suppression d'un bloc (avec confirmation)
  * - Synchronisation en direct du titre affiché dans l'en-tête d'accordéon
  *
- * Vanilla JS, sans dépendance jQuery ni autre bibliothèque : ce fichier ne
- * gère que la mécanique du repeater. L'initialisation de Select2 et de
- * CodeMirror sur les champs nouvellement clonés est déclenchée via un
- * événement custom ('chtw:block-added'), à laquelle code-editor.php (et son
- * JS associé) et le futur script Select2 s'abonnent indépendamment — ce
- * fichier n'a pas à connaître leur existence.
+ * Vanilla JS, sans dépendance jQuery ni autre bibliothèque : ce fichier ne gère que la mécanique du repeater. 
+ * L'initialisation de Select2 et de CodeMirror sur les champs nouvellement clonés est déclenchée via un événement custom ('chtw:block-added'), auquel code-editor.php et term-select.php (via les fichiers JS associés) s'abonnent indépendamment.
+ * Ce fichier n'a pas à connaître leur existence.
  */
 
 ( function () {
