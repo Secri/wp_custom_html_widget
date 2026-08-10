@@ -70,10 +70,18 @@
 
 			const isExpanded = 'true' === header.getAttribute( 'aria-expanded' ); //Subtilité liée à getAttribute() qui renvoie un string et non un booléen ! Le résultat de cette comparaison sera donc un booléen => True si aria-expanded="true" et False dans le cas contraire
 
-			header.setAttribute( 'aria-expanded', isExpanded ? 'false' : 'true' );
-			body.style.display = isExpanded ? 'none' : '';
-			if ( icon ) {
-				icon.textContent = isExpanded ? '▶' : '▼';
+			if ( isExpanded ) {
+				header.setAttribute( 'aria-expanded', 'false' );
+				body.style.display = 'none';
+				if ( icon ) {
+					icon.textContent = '▶';
+				}
+			} else {
+				header.setAttribute( 'aria-expanded', 'true' );
+				body.style.display = '';
+				if ( icon ) {
+					icon.textContent = '▼';
+				}
 			}
 		}
 
