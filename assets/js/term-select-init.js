@@ -19,9 +19,8 @@
 	}
 
 	/**
-	 * Initialise Select2 sur un <select> de termes donné, s'il n'est pas déjà
-	 * initialisé. La recherche AJAX est scopée à la taxonomie actuellement
-	 * choisie dans le .chtw-taxonomy-select du même bloc.
+	 * Initialise Select2 sur un <select> de termes donné, s'il n'est pas déjà initialisé.
+	 * La recherche AJAX est scopée à la taxonomie actuellement choisie dans le .chtw-taxonomy-select du même bloc.
 	 *
 	 * @param {HTMLSelectElement} selectElement
 	 */
