@@ -60,7 +60,7 @@
 			}
 		} );
 
-		$select.addClass( 'chtw-select2-initialized' ); //On ajouter cette classe pour identifier les elements pour lesquels le Select2 est activé
+		$select.addClass( 'chtw-select2-initialized' ); //On ajoute cette classe pour identifier les elements pour lesquels le Select2 est activé
 
 		// Tant qu'aucune taxonomie n'est choisie, le select de termes reste
 		// désactivé : chercher un terme sans savoir dans quelle taxonomie
