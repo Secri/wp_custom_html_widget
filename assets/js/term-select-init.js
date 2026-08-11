@@ -59,8 +59,8 @@
 					}
 					return response.data; // au format { results: [...], pagination: { more } } attendu par Select2
 				},
-				error: (jqXHR, textStatus) => {
-					console.error( 'chtw: La recherche de termes a échoué —', textStatus, jqXHR.status );
+				error: (jqXHR, textStatus) => { // Gestion d'un message d'erreur technique pour développeur basé sur l'objet jqXHR
+					console.error( 'chtw: term search request failed —', textStatus, jqXHR.status ); //On affiche l'erreur dans la console le type d'erreur (textStatus) et le code erreur HTTP (jsXHR.status)
 				},
 				cache: true
 			}
