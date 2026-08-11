@@ -201,58 +201,50 @@
 		 * 4. Ajout d'un nouveau bloc (clonage du template)
 		 * ---------------------------------------------------------- */
 
-		addButton.addEventListener( 'click', ( event ) => {
-			event.preventDefault();
+		addButton.addEventListener( 'click', ( event ) => { //On cible le bouton pour ajouter un bloc
+			event.preventDefault(); //On preventDefault si jamais on change d'élément HTML - Superflu à l'heure actuelle
 
-			newBlockCounter += 1;
-			const tempId = 'new_' + newBlockCounter;
+			newBlockCounter += 1; //On utilise un incrément
+			const tempId = 'new_' + newBlockCounter; //Pour créer un ID temporaire
 
-			const fragment = template.content.cloneNode( true );
-			const newRow   = fragment.querySelector( '.chtw-accordion' );
+			const fragment = template.content.cloneNode( true ); //On duplique le fragment du template du bloc (un fragment n'est PAS un élément HTML)
+			const newRow   = fragment.querySelector( '.chtw-accordion' ); //On assigne à newRow l'élément HTML parent qui contient le bloc complet
 
-			// Retire le message "Aucun bloc pour le moment" s'il est présent,
-			// devenu obsolète dès qu'un premier bloc est ajouté.
+			// Retire le message "Aucun bloc pour le moment" s'il est présent devenu obsolète dès qu'un premier bloc est ajouté.
 			const emptyNotice = blocksList.querySelector( '.chtw-no-blocks' );
 			if ( emptyNotice ) {
 				emptyNotice.parentNode.removeChild( emptyNotice );
 			}
 
-			// Renseigne l'id temporaire dans le champ caché ET dans l'attribut
-			// data-block-id (utile pour le futur script Select2/CodeMirror qui
-			// aura besoin de cibler ce bloc précisément).
+			// Renseigne l'id temporaire dans le champ caché ET dans l'attribut data-block-id (utile pour le futur script Select2/CodeMirror qui aura besoin de cibler ce bloc précisément).
 			const idField = newRow.querySelector( '.chtw-block-id-field' );
 			if ( idField ) {
 				idField.value = tempId;
 			}
 			newRow.setAttribute( 'data-block-id', tempId );
 
-			// Le nouveau bloc apparaît déjà déplié, contrairement aux blocs
-			// existants (repliés par défaut) : l'utilisateur vient de cliquer
-			// sur "Ajouter", il s'apprête donc à le remplir immédiatement.
+			// Le nouveau bloc apparaît déjà déplié, contrairement aux blocs existants (repliés par défaut) : l'utilisateur vient de cliquer sur "Ajouter", il s'apprête donc à le remplir immédiatement.
 			const header = newRow.querySelector( '.chtw-accordion-header' );
 			const body   = newRow.querySelector( '.chtw-accordion-body' );
-			if ( header && body ) {
-				header.setAttribute( 'aria-expanded', 'true' );
-				body.style.display = '';
-				const icon = header.querySelector( '.chtw-accordion-toggle-icon' );
+			if ( header && body ) { //On vérifier que header et body ne sont pas null
+				header.setAttribute( 'aria-expanded', 'true' ); //On ajoute l'attribut aria-expanded
+				body.style.display = ''; //On affiche le corps du bloc
+				const icon = header.querySelector( '.chtw-accordion-toggle-icon' ); //On met la bonne icone qui indique que l'accordéon est déplié
 				if ( icon ) {
 					icon.textContent = '▼';
 				}
 			}
 
-			blocksList.appendChild( fragment );
-			refreshMoveButtonsState();
+			blocksList.appendChild( fragment ); //La navigateur "déballe" le contenu du fragment et insère donc l'accordéon dans la liste des blocs - A noter que blocksList.appendChild( newRow ); aurait fonctionné aussi
+			refreshMoveButtonsState(); //on met à jour l'état des boutons Monter /Descendre
 
-			// Prévient le reste du plugin (Select2, CodeMirror) qu'un nouveau
-			// bloc vient d'être inséré dans le DOM, pour qu'ils puissent
-			// s'initialiser sur ses champs sans que ce fichier ait besoin de
-			// connaître leur implémentation.
+			// On utilise dispatchEvent() pour créer un événement afin de prévenir les fichiers JS qui gèrent les dépendances (Select2, CodeMirror) qu'un nouveau bloc vient d'être inséré dans le DOM
 			document.dispatchEvent( new CustomEvent( 'chtw:block-added', {
 				detail: { blockId: tempId, blockElement: newRow }
 			} ) );
 
 			// Amène le nouveau bloc dans le champ de vision de l'utilisateur.
-			newRow.scrollIntoView( { behavior: 'smooth', block: 'center' } );
+			newRow.scrollIntoView( { behavior: 'smooth', block: 'center' } ); //Pas besoin d'utiliser l'option de centrage horizontale
 		} );
 
 	} );
