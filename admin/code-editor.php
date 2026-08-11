@@ -24,19 +24,18 @@ function chtw_enqueue_code_editor( $hook_suffix ) {
 	}
 
 	$code_editor_settings = wp_enqueue_code_editor( //Configuration du CodeMirror générée par Wordpress
-													array(
-															'type'       => 'text/html',
-															'codemirror' => array(
-															'lint' => false, // coloration syntaxique seule, pas de vérification de syntaxe en temps réel
-													),
-							) );
+		array(
+			'type'       => 'text/html',
+			'codemirror' => array(
+								'lint' => false, // coloration syntaxique seule, pas de vérification de syntaxe en temps réel
+							),
+		) 
+	);
 
 	// wp_enqueue_code_editor() retourne false si l'utilisateur a désactivé la coloration syntaxique dans son profil, ou si les settings générés sont vides. 
 	// Dans ce cas, on n'enqueue pas notre script d'init, les textareas resteront de simples <textarea> sans coloration, ce qui reste utilisable.
 	if ( false === $code_editor_settings ) {
-
 		return;
-
 	}
 
 	wp_enqueue_script(
