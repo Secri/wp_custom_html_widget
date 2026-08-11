@@ -111,6 +111,22 @@
 		// État initial au chargement de la page (blocs déjà présents en PHP).
 		refreshMoveButtonsState();
 
+		/**
+		 * Désactive le bouton "Ajouter un bloc" si le nombre de blocs a atteint
+		 * CHTW_MAX_BLOCKS (cf chtwRepeaterData.maxBlocks, injecté depuis
+		 * settings.php via enqueue.php), le réactive sinon. Appelée après tout
+		 * ajout ou suppression de bloc, puisque le décompte change à chaque fois.
+		 * Complète la protection déjà posée côté PHP au chargement de la page
+		 * (cf disabled() sur ce même bouton dans settings-page-template.php) et
+		 * le rejet côté serveur en cas de contournement (chtw_sanitize_blocks()).
+		 */
+		function refreshAddButtonState() {
+			const currentCount = blocksList.querySelectorAll( '.chtw-accordion' ).length;
+			addButton.disabled = currentCount >= chtwRepeaterData.maxBlocks;
+		}
+
+		refreshAddButtonState();
+
 		/* ------------------------------------------------------------
 		 * 2. Synchronisation en direct du titre affiché (élément <h3>) et de l'input modifiable
 		 * Délégation d'événement, pour couvrir aussi les blocs ajoutés dynamiquement
@@ -151,6 +167,7 @@
 				row.parentNode.removeChild( row ); //On le supprime
 			}
 			refreshMoveButtonsState(); //On met à jour l'état des boutons monter /descendre
+			refreshAddButtonState(); //On réactive le bouton "Ajouter" si on repasse sous la limite
 		} );
 
 		/* ------------------------------------------------------------
@@ -204,6 +221,14 @@
 		addButton.addEventListener( 'click', ( event ) => { //On cible le bouton pour ajouter un bloc
 			event.preventDefault(); //On preventDefault si jamais on change d'élément HTML - Superflu à l'heure actuelle
 
+			// Sécurité : le bouton devrait déjà être disabled à ce stade (cf
+			// refreshAddButtonState()), mais on vérifie explicitement, au cas où
+			// un clic parviendrait malgré tout (ex: clic synthétique, focus clavier
+			// avant que l'état disabled n'ait été appliqué).
+			if ( addButton.disabled ) {
+				return;
+			}
+
 			newBlockCounter += 1; //On utilise un incrément
 			const tempId = 'new_' + newBlockCounter; //Pour créer un ID temporaire
 
@@ -237,6 +262,7 @@
 
 			blocksList.appendChild( fragment ); //La navigateur "déballe" le contenu du fragment et insère donc l'accordéon dans la liste des blocs - A noter que blocksList.appendChild( newRow ); aurait fonctionné aussi
 			refreshMoveButtonsState(); //on met à jour l'état des boutons Monter /Descendre
+			refreshAddButtonState(); //On désactive le bouton "Ajouter" si on vient d'atteindre la limite
 
 			// On utilise dispatchEvent() pour créer un événement afin de prévenir les fichiers JS qui gèrent les dépendances (Select2, CodeMirror) qu'un nouveau bloc vient d'être inséré dans le DOM
 			document.dispatchEvent( new CustomEvent( 'chtw:block-added', {
