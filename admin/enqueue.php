@@ -54,6 +54,7 @@ function chtw_enqueue_admin_assets( $hook_suffix ) {
 		array( //Contenu de la variable chtwRepeaterData
 			'noTitleLabel'       => __( '(Bloc sans titre)', 'chtw' ),
 			'confirmRemoveLabel' => __( 'Supprimer ce bloc ? Cette action est irréversible une fois les modifications enregistrées.', 'chtw' ),
+			'maxBlocks'          => CHTW_MAX_BLOCKS, // définie dans settings.php, chargé avant ce fichier — cf ordre des require_once dans wp-custom-html-widget.php
 		)
 	);
 
