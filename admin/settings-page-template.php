@@ -177,7 +177,26 @@ function chtw_render_settings_page() {
 	}
 
 	$blocks = chtw_get_blocks(); //Fonction de lecture de la bdd qui renvoie un tableau des blocs existant (voir settings.php)
-	
+
+	// Avertissement préventif à l'approche de la limite CHTW_MAX_BLOCKS
+	// (cf CHTW_MAX_BLOCKS_WARNING_THRESHOLD dans settings.php), affiché au
+	// chargement de la page — pas seulement à la sauvegarde — pour laisser
+	// à l'admin le temps d'anticiper avant que la limite ne devienne
+	// bloquante (cf le rejet total dans chtw_sanitize_blocks()).
+	if ( count( $blocks ) >= CHTW_MAX_BLOCKS_WARNING_THRESHOLD ) {
+		add_settings_error(
+			'chtw_blocks',
+			'chtw_blocks_approaching_limit',
+			sprintf(
+				/* translators: 1: nombre de blocs actuels, 2: nombre maximal de blocs autorisés */
+				__( 'Vous approchez de la limite de blocs autorisés (%1$d / %2$d). Pensez à supprimer les blocs inutilisés.', 'chtw' ),
+				count( $blocks ),
+				CHTW_MAX_BLOCKS
+			),
+			'warning'
+		);
+	}
+
 	?>
 	
 	<div class="wrap chtw-settings-wrap">
@@ -206,7 +225,7 @@ function chtw_render_settings_page() {
 			</div>
 
 			<p>
-				<button type="button" id="chtw-add-block" class="button button-secondary">
+				<button type="button" id="chtw-add-block" class="button button-secondary" <?php disabled( count( $blocks ) >= CHTW_MAX_BLOCKS ); ?>>
 					<?php esc_html_e( '+ Ajouter un bloc', 'chtw' ); ?>
 				</button>
 			</p>
