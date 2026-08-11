@@ -78,7 +78,7 @@ function chtw_render_block_row( array $block ) {
 					<?php esc_html_e( 'Titre du bloc (repère interne, non affiché sur le site)', 'chtw' ); ?>
 					<input
 						type="text"
-						maxlength="<?php echo esc_attr( CHTW_BLOCK_TITLE_MAX_LENGTH ); ?>" //Limite maximale d'un titre définie dans settings.php qui est chargé avant
+						maxlength="<?php echo esc_attr( CHTW_BLOCK_TITLE_MAX_LENGTH ); //Limite maximale d'un titre définie dans settings.php qui est chargé avant ?>"
 						class="regular-text chtw-block-title-field"
 						name="<?php echo esc_attr( $name_base ); ?>[title]"
 						value="<?php echo esc_attr( $title ); ?>"
