@@ -68,6 +68,7 @@ function chtw_enqueue_term_select( $hook_suffix ) {
 			'ajaxUrl'           => admin_url( 'admin-ajax.php' ),
 			'nonce'             => wp_create_nonce( 'chtw_search_terms' ),
 			'searchPlaceholder' => __( 'Sélectionner un terme', 'chtw' ),
+			'errorLoadingLabel' => __( 'Impossible de charger les termes. Vérifiez votre connexion et réessayez.', 'chtw' ),
 		)
 	);
 }
