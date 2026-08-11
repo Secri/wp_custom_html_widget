@@ -216,7 +216,7 @@
 				emptyNotice.parentNode.removeChild( emptyNotice );
 			}
 
-			// Renseigne l'id temporaire dans le champ caché ET dans l'attribut data-block-id (utile pour le futur script Select2/CodeMirror qui aura besoin de cibler ce bloc précisément).
+			// Renseigne l'id temporaire dans le champ caché ET dans l'attribut data-block-id
 			const idField = newRow.querySelector( '.chtw-block-id-field' );
 			if ( idField ) {
 				idField.value = tempId;
