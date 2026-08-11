@@ -39,6 +39,9 @@
 			placeholder: chtwTermSelectData.searchPlaceholder,
 			allowClear: true,
 			minimumInputLength: 0, // liste initiale visible dès l'ouverture, avant même de taper une recherche
+			language: {
+				errorLoading: () => chtwTermSelectData.errorLoadingLabel // Message affiché dans le Select2 en cas d'échec de la requête AJAX
+			},
 			ajax: {
 				url: chtwTermSelectData.ajaxUrl, //défini dans term-select.php et envoyée via wp_localize-script - la propriété ajaxUrl stocke l'endpoint vers lequel on envoie la requête
 				dataType: 'json',
@@ -55,6 +58,9 @@
 						return { results: [] };
 					}
 					return response.data; // au format { results: [...], pagination: { more } } attendu par Select2
+				},
+				error: (jqXHR, textStatus) => {
+					console.error( 'chtw: La recherche de termes a échoué —', textStatus, jqXHR.status );
 				},
 				cache: true
 			}
