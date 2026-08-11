@@ -20,7 +20,7 @@ function chtw_add_settings_page() {
 		__( 'Widgets HTML personnalisés', 'chtw' ), // Titre affiché dans l'onglet du navigateur / <title>
 		__( 'Widgets HTML', 'chtw' ),               // Texte affiché dans le sous-menu "Réglages"
 		'manage_options',                           // Capability requise (cohérent avec register_setting dans settings.php)
-		'chtw_settings_page',                       // Slug de la page - Peut-être renommer pour éviter d'avoir le slug settings_page_chtw_settings_page ?
+		'chtw_widgets',                             // Slug de la page
 		'chtw_render_settings_page'                 // Callback de rendu, défini dans settings-page-template.php
 	);
 
