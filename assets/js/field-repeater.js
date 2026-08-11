@@ -162,19 +162,17 @@
 		 * changer son ordre d'affichage, sans logique PHP supplémentaire.
 		 * ---------------------------------------------------------- */
 
-		blocksList.addEventListener( 'click', ( event ) => {
+		blocksList.addEventListener( 'click', ( event ) => { //Délégation d'événement (pareil que précédemment)
 
-			const moveUpButton   = event.target.closest( '.chtw-move-block-up' );
-			const moveDownButton = event.target.closest( '.chtw-move-block-down' );
+			const moveUpButton   = event.target.closest( '.chtw-move-block-up' ); //on utilise la méthode .closest() pour cibler le bouton "Monter"
+			const moveDownButton = event.target.closest( '.chtw-move-block-down' ); //on utilise la méthode .closest() pour cibler le bouton "Descendre"
 
-			if ( ! moveUpButton && ! moveDownButton ) {
+			if ( ! moveUpButton && ! moveDownButton ) { //On s'assure que moveUpButton ET moveDownButton ne sont pas null sinon on ne fait rien
 				return;
 			}
-			event.preventDefault();
+			event.preventDefault(); //superflu avec la structure HTML actuelle (<button type="button">) mais on le laisse au cas où on voudrait par exemple basculer sur un lien hypertext <a>
 
-			// Sécurité : un bouton disabled ne devrait déjà pas déclencher de clic
-			// dans la plupart des navigateurs, mais on vérifie explicitement pour
-			// éviter tout comportement inattendu (ex: clic synthétique, focus clavier).
+			// Sécurité : un bouton disabled ne devrait déjà pas déclencher de clic dans la plupart des navigateurs, mais on vérifie explicitement pour éviter tout comportement inattendu (ex: clic synthétique, focus clavier).
 			if ( ( moveUpButton && moveUpButton.disabled ) || ( moveDownButton && moveDownButton.disabled ) ) {
 				return;
 			}
