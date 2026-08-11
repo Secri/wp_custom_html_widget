@@ -40,8 +40,8 @@
 		 * ---------------------------------------------------------- */
 
 		blocksList.addEventListener( 'click', ( event ) => { //On met l'écouteur sur toute la liste des blocks, on cible l'élément clilqué et on remonte jusqu'à l'accordéon parent
-			const header = event.target.closest( '.chtw-accordion-header' );
-			if ( ! header ) {
+			const header = event.target.closest( '.chtw-accordion-header' ); //On utilise la méthode .closest() pour cibler l'en-tête de l'accordéon qui a été clilqué
+			if ( ! header ) { //Mécanisme défensif - On ne fait rien si header est null
 				return;
 			}
 			// Un clic sur les boutons d'action de l'en-tête (supprimer, monter, descendre) ne doit pas aussi déclencher le toggle de l'accordéon !
@@ -120,7 +120,7 @@
 			if ( ! event.target.classList.contains( 'chtw-block-title-field' ) ) { //Si l'événement de saisie n'est pas dans l'<input> du titre du block
 				return; //On en fait rien
 			}
-			const row     = event.target.closest( '.chtw-accordion' ); //On remonte dans le DOM pour retrouver l'ancètre dans lequel l'événement s'est produit
+			const row     = event.target.closest( '.chtw-accordion' ); //On utilise .closest() pour cibler l'accordéon dans lequel le clic a eu lieu
 			const display = row.querySelector( '.chtw-block-title-display' ); //On met l'élément <h3> (title display) dans une variable
 			if ( ! display ) { //Si l'élément n'existe pas
 				return;
@@ -133,23 +133,24 @@
 		 * 3. Suppression d'un bloc (avec confirmation, délégation d'événement)
 		 * ---------------------------------------------------------- */
 
-		blocksList.addEventListener( 'click', ( event ) => {
-			const removeButton = event.target.closest( '.chtw-remove-block' );
-			if ( ! removeButton ) {
+		blocksList.addEventListener( 'click', ( event ) => { //Délégation d'événement, on met l'événement sur la liste de blocs
+			const removeButton = event.target.closest( '.chtw-remove-block' ); //On sélectionne la cible du clic et on s'assure que c'est bien le bouton de suppression
+			if ( ! removeButton ) { //Si removeButton est null on ne fait rien
 				return;
 			}
-			event.preventDefault();
+			event.preventDefault(); //superflu avec la structure HTML actuelle (<button type="button">) mais on le laisse au cas où on voudrait par exemple basculer sur un lien hypertext <a>
 
-			const confirmed = window.confirm( chtwRepeaterData.confirmRemoveLabel );
-			if ( ! confirmed ) {
+			const confirmed = window.confirm( chtwRepeaterData.confirmRemoveLabel ); //On utilise window.confirm() et on passe la chaîne définie dans admin/enqueue.php - window.confirm() est bloquant mais c'est le comportement que l'on veut pour cette action irréversible
+			if ( ! confirmed ) { //Early return - Si la confirmation est refusée on en fait rien
 				return;
 			}
 
-			const row = removeButton.closest( '.chtw-accordion' );
+			//La suite s'exécute si l'utilisateur a confirmé
+			const row = removeButton.closest( '.chtw-accordion' ); //On utilise .closest() pour remonter sur l'accordéon parent
 			if ( row ) {
-				row.parentNode.removeChild( row );
+				row.parentNode.removeChild( row ); //On le supprime
 			}
-			refreshMoveButtonsState();
+			refreshMoveButtonsState(); //On met à jour l'état des boutons monter /descendre
 		} );
 
 		/* ------------------------------------------------------------
