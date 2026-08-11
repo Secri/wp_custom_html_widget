@@ -18,6 +18,33 @@ if ( ! defined( 'ABSPATH' ) ) exit; // sécurité : pas d'accès direct au fichi
  */
 define( 'CHTW_BLOCK_TITLE_MAX_LENGTH', 100 );
 
+/**
+ * Nombre maximal de blocs autorisés. Protection de robustesse (pas de
+ * sécurité stricte) contre une accumulation excessive de blocs, qui
+ * dégraderait le rendu de la page de settings sans jamais menacer la base
+ * de données (50 blocs représentent quelques dizaines à quelques centaines
+ * de Ko, négligeable pour wp_options).
+ *
+ * Le JS (field-repeater.js) désactive déjà le bouton "Ajouter un bloc" à
+ * cette limite : le seul scénario qui peut atteindre ce nombre côté serveur
+ * est donc une requête forgée (contournement volontaire du JS) — traité en
+ * conséquence dans chtw_sanitize_blocks() : rejet total de la soumission,
+ * pas de troncature (cette limite n'a pas vocation à être abaissée après
+ * coup, un dépassement ici est considéré comme anormal).
+ *
+ * Utilisée aussi comme seuil de calcul pour l'avertissement préventif
+ * affiché à l'admin à l'approche de la limite (cf CHTW_MAX_BLOCKS_WARNING_THRESHOLD
+ * et chtw_render_settings_page() dans settings-page-template.php).
+ */
+define( 'CHTW_MAX_BLOCKS', 50 );
+
+/**
+ * Seuil (en nombre de blocs) à partir duquel un avertissement préventif est
+ * affiché à l'admin, pour anticiper l'approche de CHTW_MAX_BLOCKS avant
+ * qu'elle ne devienne bloquante. Fixé à 90% de CHTW_MAX_BLOCKS.
+ */
+define( 'CHTW_MAX_BLOCKS_WARNING_THRESHOLD', (int) ( CHTW_MAX_BLOCKS * 0.9 ) );
+
 /* ------------------------------------------------------------------------
  * 1. Attribution des id définitifs aux nouveaux blocs (avant sanitization)
  *
@@ -117,6 +144,25 @@ function chtw_sanitize_blocks( $raw_blocks ) {
 			'chtw_blocks',
 			'chtw_blocks_malformed_submission',
 			__( 'La soumission du formulaire semble corrompue : aucune modification n\'a été enregistrée, vos blocs existants ont été conservés tels quels.', 'chtw' ),
+			'error'
+		);
+		return chtw_get_blocks();
+	}
+
+	// Rejet total (pas de troncature) si le nombre de blocs soumis dépasse
+	// CHTW_MAX_BLOCKS : le JS désactive déjà le bouton "Ajouter un bloc" à
+	// cette limite en usage normal, donc un dépassement ici ne peut provenir
+	// que d'une requête forgée — traité comme une soumission anormale, au
+	// même titre qu'une soumission structurellement invalide ci-dessus.
+	if ( count( $raw_blocks ) > CHTW_MAX_BLOCKS ) {
+		add_settings_error(
+			'chtw_blocks',
+			'chtw_blocks_limit_exceeded',
+			sprintf(
+				/* translators: %d: nombre maximal de blocs autorisés */
+				__( 'La soumission dépasse la limite de %d blocs autorisés : aucune modification n\'a été enregistrée, vos blocs existants ont été conservés tels quels.', 'chtw' ),
+				CHTW_MAX_BLOCKS
+			),
 			'error'
 		);
 		return chtw_get_blocks();
