@@ -39,8 +39,8 @@ function chtw_assign_pending_block_ids() {
 		return; // On ne fait rien
 	}
 
-	if ( empty( $_POST['chtw_blocks'] ) || ! is_array( $_POST['chtw_blocks'] ) ) { // Si c'est bien notre formulaire, on vérifie que c'est la bonne option qui est soumise
-		return; // Sinon on ne fait rien
+	if ( empty( $_POST['chtw_blocks'] ) || ! is_array( $_POST['chtw_blocks'] ) ) { // Si chtw_blocks est vide ou que ce n'est pas un tableau
+		return; // On ne fait rien
 	}
 
 	foreach ( $_POST['chtw_blocks'] as $index => $raw_block ) { // On itère sur la data de l'option
