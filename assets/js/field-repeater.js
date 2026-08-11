@@ -167,34 +167,34 @@
 			const moveUpButton   = event.target.closest( '.chtw-move-block-up' ); //on utilise la méthode .closest() pour cibler le bouton "Monter"
 			const moveDownButton = event.target.closest( '.chtw-move-block-down' ); //on utilise la méthode .closest() pour cibler le bouton "Descendre"
 
-			if ( ! moveUpButton && ! moveDownButton ) { //On s'assure que moveUpButton ET moveDownButton ne sont pas null sinon on ne fait rien
+			if ( ! moveUpButton && ! moveDownButton ) { //Si moveUpButton ET moveDownButton sont null sinon on ne fait rien
 				return;
 			}
 			event.preventDefault(); //superflu avec la structure HTML actuelle (<button type="button">) mais on le laisse au cas où on voudrait par exemple basculer sur un lien hypertext <a>
 
 			// Sécurité : un bouton disabled ne devrait déjà pas déclencher de clic dans la plupart des navigateurs, mais on vérifie explicitement pour éviter tout comportement inattendu (ex: clic synthétique, focus clavier).
-			if ( ( moveUpButton && moveUpButton.disabled ) || ( moveDownButton && moveDownButton.disabled ) ) {
+			if ( ( moveUpButton && moveUpButton.disabled ) || ( moveDownButton && moveDownButton.disabled ) ) { //Si le bouton existe ET qu'il est disable, on ne fait rien
 				return;
 			}
 
-			const row = ( moveUpButton || moveDownButton ).closest( '.chtw-accordion' );
+			const row = ( moveUpButton || moveDownButton ).closest( '.chtw-accordion' ); //On cible le bloc parent du bouton qui a été cliqué
 			if ( ! row ) {
 				return;
 			}
 
-			if ( moveUpButton ) {
-				const previousRow = row.previousElementSibling;
-				if ( previousRow ) {
-					blocksList.insertBefore( row, previousRow );
+			if ( moveUpButton ) { //Si le bouton cliqué est "Monter"
+				const previousRow = row.previousElementSibling; //on cible le bloc précédent
+				if ( previousRow ) { //S'il existe
+					blocksList.insertBefore( row, previousRow ); //on met le bloc row au dessus du précédent (action de monter)
 				}
 			} else {
-				const nextRow = row.nextElementSibling;
+				const nextRow = row.nextElementSibling; //On cible le bloc suivant
 				if ( nextRow ) {
-					blocksList.insertBefore( nextRow, row );
+					blocksList.insertBefore( nextRow, row ); //on met le bloc row en dessous du bloc suivant (action de descendre)
 				}
 			}
 
-			refreshMoveButtonsState();
+			refreshMoveButtonsState(); //On met à jour l'état des boutons Monter /Descendre
 		} );
 
 		/* ------------------------------------------------------------
