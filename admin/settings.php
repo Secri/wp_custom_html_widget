@@ -53,6 +53,13 @@ function chtw_assign_pending_block_ids() {
 
 		if ( 0 === strpos( $raw_id, 'new_' ) ) { // Si cet id est un id temporaire (qui commence par new_ = attribué en JS)
 			$new_block                            = chtw_create_new_block(); // On crée un nouveau bloc avec un ID définitif
+			/* ATTENTION — modification directe de $_POST['chtw_blocks']
+			* ce n'est PAS un contournement de la sanitization, ni une faille : $_POST n'est ici que le vecteur de transport entre cette fonction et le
+			* sanitize_callback natif de WordPress (chtw_sanitize_blocks(), invoqué plus tard par options.php).
+			* Aucune donnée n'est lue en confiance ni persistée depuis ce fichier : seule la clé 'id' est réécrite, avec une valeur générée par chtw_create_new_block().
+			* chtw_sanitize_blocks() re-valide l'intégralité du tableau, y compris cet id.
+			* cette fonction ne remplace en rien la sanitization, elle la précède seulement pour éviter que la génération d'id (avec son effet de bord d'incrémentation de chtw_next_id) ne vive dans chtw_sanitize_blocks()
+			*/
 			$_POST['chtw_blocks'][ $index ]['id'] = $new_block['id']; // On intercepte le tableau $_POST et on remplace le bloc avec l'id temporaire par son jumeau avec l'id définitif
 		}
 	}
