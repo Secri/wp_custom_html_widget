@@ -24,6 +24,31 @@
 	
 	let newBlockCounter = 0; // on utilise let, cette variable est réassignée à chaque ajout de bloc.
 
+	/**
+	 * Libellés traduits injectés par wp_localize_script() (cf admin/enqueue.php), avec valeurs de repli.
+	 *
+	 * wp_localize_script() imprime un <script> INLINE juste avant la balise du fichier. Le fichier
+	 * peut donc se charger sans que l'objet existe : Content-Security-Policy stricte bloquant
+	 * l'inline, plugin d'optimisation qui déplace les scripts, ou handle désaligné entre l'appel à
+	 * wp_enqueue_script() et celui à wp_localize_script() après un renommage.
+	 *
+	 * Sans repli, la première lecture de chtwRepeaterData lèverait une ReferenceError (l'identifiant
+	 * n'est pas déclaré, y accéder est une exception et non une valeur undefined) au beau milieu de
+	 * l'initialisation : tous les écouteurs enregistrés à la suite ne le seraient jamais, et l'écran
+	 * se retrouverait à moitié fonctionnel — accordéon opérationnel, mais ni ajout, ni suppression,
+	 * ni réordonnancement.
+	 *
+	 * Ces deux libellés ne sont que du confort : on dégrade vers le français plutôt que d'interrompre
+	 * le module. La limite de blocs, elle, n'est PAS ici : elle est lue sur data-max-blocks (cf
+	 * getMaxBlocks()), un canal qui ne peut pas échouer indépendamment du fichier JS.
+	 */
+	const repeaterData = window.chtwRepeaterData || {};
+
+	const labels = {
+		noTitle:       repeaterData.noTitleLabel || '(Bloc sans titre)',
+		confirmRemove: repeaterData.confirmRemoveLabel || 'Supprimer ce bloc ? Cette action est irréversible une fois les modifications enregistrées.',
+	};
+
 	document.addEventListener( 'DOMContentLoaded', () => { //On s'assure que le DOM est bien chargé
 
 		const blocksList = document.getElementById( 'chtw-blocks-list' );
@@ -139,17 +164,38 @@
 		let nextFieldIndex = getHighestFieldIndex() + 1;
 
 		/**
+		 * Retourne la limite de blocs (CHTW_MAX_BLOCKS), lue sur l'attribut data-max-blocks du
+		 * bouton "Ajouter un bloc".
+		 *
+		 * Volontairement lue dans le DOM plutôt que dans l'objet localisé : c'est le même document
+		 * que ce fichier manipule déjà, donc un canal qui ne peut pas disparaître indépendamment de
+		 * lui. La source de vérité reste unique — la constante PHP, rendue dans l'attribut par
+		 * settings-page-template.php.
+		 *
+		 * Repli à 0 si l'attribut est absent ou illisible : le bouton reste alors désactivé en
+		 * permanence. C'est délibérément le repli le plus restrictif, parce que l'erreur inverse
+		 * coûte cher — au-delà de la limite, chtw_sanitize_blocks() rejette la soumission ENTIÈRE
+		 * et l'utilisateur perd toute sa saisie. Mieux vaut ne pas pouvoir ajouter de bloc que
+		 * d'en saisir soixante pour les perdre à l'enregistrement.
+		 *
+		 * @return {number}
+		 */
+		function getMaxBlocks() {
+			const raw = parseInt( addButton.dataset.maxBlocks, 10 );
+			return Number.isNaN( raw ) ? 0 : raw;
+		}
+
+		/**
 		 * Désactive le bouton "Ajouter un bloc" si le nombre de blocs a atteint
-		 * CHTW_MAX_BLOCKS (cf chtwRepeaterData.maxBlocks, injecté depuis
-		 * settings.php via enqueue.php), le réactive sinon. Appelée après tout
-		 * ajout ou suppression de bloc, puisque le décompte change à chaque fois.
+		 * CHTW_MAX_BLOCKS, le réactive sinon. Appelée après tout ajout ou
+		 * suppression de bloc, puisque le décompte change à chaque fois.
 		 * Complète la protection déjà posée côté PHP au chargement de la page
 		 * (cf disabled() sur ce même bouton dans settings-page-template.php) et
 		 * le rejet côté serveur en cas de contournement (chtw_sanitize_blocks()).
 		 */
 		function refreshAddButtonState() {
 			const currentCount = blocksList.querySelectorAll( '.chtw-accordion' ).length;
-			addButton.disabled = currentCount >= chtwRepeaterData.maxBlocks;
+			addButton.disabled = currentCount >= getMaxBlocks();
 		}
 
 		refreshAddButtonState();
@@ -169,7 +215,7 @@
 				return;
 			}
 			const value = event.target.value.trim();
-			display.textContent = '' !== value ? value : chtwRepeaterData.noTitleLabel; //chtwRepeaterData.noTitleLabel vaut '(Block sans titre)', voir admin/enqueue.php
+			display.textContent = '' !== value ? value : labels.noTitle; //Libellé traduit injecté par admin/enqueue.php, avec repli si l'objet localisé est absent
 		} );
 
 		/* ------------------------------------------------------------
@@ -183,7 +229,7 @@
 			}
 			event.preventDefault(); //superflu avec la structure HTML actuelle (<button type="button">) mais on le laisse au cas où on voudrait par exemple basculer sur un lien hypertext <a>
 
-			const confirmed = window.confirm( chtwRepeaterData.confirmRemoveLabel ); //On utilise window.confirm() et on passe la chaîne définie dans admin/enqueue.php - window.confirm() est bloquant mais c'est le comportement que l'on veut pour cette action irréversible
+			const confirmed = window.confirm( labels.confirmRemove ); //On utilise window.confirm() et on passe la chaîne définie dans admin/enqueue.php - window.confirm() est bloquant mais c'est le comportement que l'on veut pour cette action irréversible
 			if ( ! confirmed ) { //Early return - Si la confirmation est refusée on en fait rien
 				return;
 			}
