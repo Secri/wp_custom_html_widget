@@ -164,16 +164,72 @@ function chtw_register_settings() {
  * ---------------------------------------------------------------------- */
 
 /**
+ * Callback de sanitization enregistré via register_setting().
+ *
+ * Coquille de mémorisation autour de chtw_sanitize_blocks_uncached(), qui contient le traitement réel.
+ *
+ * POURQUOI CETTE COQUILLE ?
+ *
+ * update_option() et add_option() appellent toutes deux sanitize_option(), donc ce callback. Or la
+ * première délègue à la seconde lorsque l'option n'a pas encore de ligne en base :
+ *
+ *     $value = sanitize_option( $option, $value );   // 1re exécution
+ *     ...
+ *     if ( apply_filters( "default_option_{$option}", false, $option, false ) === $old_value ) {
+ *         return add_option( $option, $value, '', $autoload );   // qui re-sanitize
+ *     }
+ *
+ * Le 'default' déclaré dans register_setting() n'y change rien : WordPress compare justement
+ * $old_value à cette valeur par défaut pour détecter une option encore absente. Le traitement
+ * s'exécuterait donc deux fois à la toute première sauvegarde d'une installation — sans altérer
+ * les données (toutes les transformations sont idempotentes), mais en rejouant les
+ * add_settings_error() de chtw_sanitize_blocks_uncached() : l'utilisateur verrait chaque
+ * avertissement en double, et croirait deux blocs concernés là où il n'y en a qu'un.
+ *
+ * La variable statique conserve sa valeur d'un appel à l'autre pour la durée de la requête HTTP
+ * uniquement — rien ne subsiste d'une soumission à la suivante, ce qui est exactement la portée
+ * recherchée. La sentinelle null distingue "pas encore calculé" d'un résultat légitime : le test
+ * doit rester une comparaison stricte à null et NON un empty(), sous peine de confondre l'absence
+ * de calcul avec un tableau vide — cas parfaitement valide (suppression de tous les blocs), et
+ * justement l'un de ceux qui ont le plus de chances de produire un avertissement.
+ *
+ * LIMITE ASSUMÉE : cette mémorisation suppose un seul jeu de valeurs par requête. Si un autre code
+ * appelait update_option( 'chtw_blocks', ... ) avec un contenu différent au cours de la même
+ * requête, il récupérerait le résultat de la première sanitization et non la sienne. options.php ne
+ * traitant qu'une soumission à la fois, le cas ne se présente pas aujourd'hui — mais toute
+ * sauvegarde programmatique ajoutée plus tard devra le prendre en compte.
+ *
+ * @param mixed $raw_blocks
+ * @return array
+ */
+function chtw_sanitize_blocks( $raw_blocks ) {
+
+	static $sanitized = null; // initialisée au premier appel uniquement : PHP ignore cette ligne aux appels suivants
+
+	if ( null === $sanitized ) {
+		$sanitized = chtw_sanitize_blocks_uncached( $raw_blocks );
+	}
+
+	return $sanitized;
+
+}
+
+/**
  * Sanitize l'ensemble du tableau soumis par le formulaire.
  * Reçoit le tableau brut ($_POST['chtw_blocks'] tel que WordPress le transmet via register_setting), retourne un tableau propre prêt à être stocké en bdd.
  *
  * Au moment où cette fonction s'exécute, chaque bloc a donc déjà soit un id 'widget_N' valide, soit un id invalide (bug, requête corrompue), auquel cas il sera rejeté ci-dessous.
  *
+ * Ne pas appeler directement : passer par chtw_sanitize_blocks(), qui garantit une exécution unique
+ * par requête. Les multiples points de sortie de cette fonction sont la raison pour laquelle la
+ * mémorisation vit dans une coquille séparée plutôt qu'ici — un seul return oublié suffirait à la
+ * rendre inopérante.
+ *
  * @param mixed $raw_blocks
  * @return array
  */
 
-function chtw_sanitize_blocks( $raw_blocks ) {
+function chtw_sanitize_blocks_uncached( $raw_blocks ) {
 
 	if ( ! is_array( $raw_blocks ) ) {
 		// $raw_blocks dans un format inattendu (ex: requête corrompue/falsifiée, $_POST['chtw_blocks'] absent alors qu'il aurait dû être présent) : 
