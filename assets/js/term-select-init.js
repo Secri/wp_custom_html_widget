@@ -44,6 +44,7 @@
 			},
 			ajax: {
 				url: chtwTermSelectData.ajaxUrl, //défini dans term-select.php et envoyée via wp_localize-script - la propriété ajaxUrl stocke l'endpoint vers lequel on envoie la requête
+				type: 'POST', // Select2 envoie ses requêtes en GET par défaut (o.extend({type:"GET"}, this.ajaxOptions) dans select2.min.js) : sans cette surcharge, chtw_handle_term_search_request() ne trouverait rien dans $_POST et répondrait systématiquement 400 "Taxonomie invalide". POST plutôt que lecture de $_REQUEST côté PHP : garde le nonce et les paramètres hors des URL et des logs serveur.
 				dataType: 'json',
 				delay: 250, // en milliseconde pour ne pas envoyer de requête à chaque frappe
 				data: ( params ) => ( {
@@ -61,8 +62,7 @@
 				},
 				error: (jqXHR, textStatus) => { // Gestion d'un message d'erreur technique pour développeur basé sur l'objet jqXHR
 					console.error( 'chtw: term search request failed —', textStatus, jqXHR.status ); //On affiche l'erreur dans la console le type d'erreur (textStatus) et le code erreur HTTP (jsXHR.status)
-				},
-				cache: true
+				}
 			}
 		} );
 
