@@ -11,40 +11,6 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit; // sécurité : pas d'accès direct au fichier
 
-/**
- * Longueur maximale (en nombre de caractères) autorisée pour le titre d'un bloc. Utilisée à deux endroits qui doivent rester cohérents entre eux :
- * - ici, comme troncature réelle à la sauvegarde (chtw_sanitize_blocks())
- * - dans settings-page-template.php, comme attribut HTML maxlength sur le champ de saisie
- */
-define( 'CHTW_BLOCK_TITLE_MAX_LENGTH', 100 );
-
-/**
- * Nombre maximal de blocs autorisés. Protection de robustesse (pas de
- * sécurité stricte) contre une accumulation excessive de blocs, qui
- * dégraderait le rendu de la page de settings sans jamais menacer la base
- * de données (50 blocs représentent quelques dizaines à quelques centaines
- * de Ko, négligeable pour wp_options).
- *
- * Le JS (field-repeater.js) désactive déjà le bouton "Ajouter un bloc" à
- * cette limite : le seul scénario qui peut atteindre ce nombre côté serveur
- * est donc une requête forgée (contournement volontaire du JS) — traité en
- * conséquence dans chtw_sanitize_blocks() : rejet total de la soumission,
- * pas de troncature (cette limite n'a pas vocation à être abaissée après
- * coup, un dépassement ici est considéré comme anormal).
- *
- * Utilisée aussi comme seuil de calcul pour l'avertissement préventif
- * affiché à l'admin à l'approche de la limite (cf CHTW_MAX_BLOCKS_WARNING_THRESHOLD
- * et chtw_render_settings_page() dans settings-page-template.php).
- */
-define( 'CHTW_MAX_BLOCKS', 50 );
-
-/**
- * Seuil (en nombre de blocs) à partir duquel un avertissement préventif est
- * affiché à l'admin, pour anticiper l'approche de CHTW_MAX_BLOCKS avant
- * qu'elle ne devienne bloquante. Fixé à 90% de CHTW_MAX_BLOCKS.
- */
-define( 'CHTW_MAX_BLOCKS_WARNING_THRESHOLD', (int) ( CHTW_MAX_BLOCKS * 0.9 ) );
-
 /* ------------------------------------------------------------------------
  * 1. Attribution des id définitifs aux nouveaux blocs (avant sanitization)
  *
