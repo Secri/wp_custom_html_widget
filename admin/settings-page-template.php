@@ -256,7 +256,7 @@ function chtw_render_settings_page() {
 			</div>
 
 			<p>
-				<button type="button" id="chtw-add-block" class="button button-secondary" <?php disabled( count( $blocks ) >= CHTW_MAX_BLOCKS ); ?>>
+				<button type="button" id="chtw-add-block" class="button button-secondary" data-max-blocks="<?php echo esc_attr( CHTW_MAX_BLOCKS ); //Limite lue par field-repeater.js pour piloter l'état de ce bouton après chaque ajout ou suppression. Transmise par le DOM plutôt que par wp_localize_script() : le script inline produit par ce dernier peut être bloqué (CSP stricte) ou déplacé (plugin d'optimisation) indépendamment du fichier JS, alors que cet attribut fait partie du document que field-repeater.js manipule de toute façon. ?>" <?php disabled( count( $blocks ) >= CHTW_MAX_BLOCKS ); ?>>
 					<?php esc_html_e( '+ Ajouter un bloc', 'chtw' ); ?>
 				</button>
 			</p>
