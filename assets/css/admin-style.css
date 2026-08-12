@@ -114,6 +114,18 @@
  * Divers
  * ------------------------------------------------------------------ */
 
+/* Retour visuel après un déplacement de bloc (cf handler des boutons Monter/Descendre dans
+   field-repeater.js). Le fond revient à transparent, et non à la couleur de l'en-tête : la
+   propriété n'est posée que le temps de l'animation, l'élément retrouve ensuite son style normal. */
+@keyframes chtw-flash {
+	from { background-color: #f0f6fc; } /* bleu clair de la palette d'administration WordPress */
+	to   { background-color: transparent; }
+}
+
+.chtw-block-moved {
+	animation: chtw-flash 0.8s ease-out;
+}
+
 .chtw-no-blocks {
 	font-style: italic;
 	color: #646970;
