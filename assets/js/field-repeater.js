@@ -40,7 +40,7 @@
 		 * ---------------------------------------------------------- */
 
 		blocksList.addEventListener( 'click', ( event ) => { //On met l'écouteur sur toute la liste des blocks, on cible l'élément clilqué et on remonte jusqu'à l'accordéon parent
-			const header = event.target.closest( '.chtw-accordion-header' ); //On utilise la méthode .closest() pour cibler l'en-tête de l'accordéon qui a été clilqué
+			const header = event.target.closest( '.chtw-accordion-header' ); //On utilise la méthode .closest() pour cibler l'en-tête de l'accordéon qui a été cliqué
 			if ( ! header ) { //Mécanisme défensif - On ne fait rien si header est null
 				return;
 			}
@@ -83,6 +83,14 @@
 				if ( icon ) {
 					icon.textContent = '▼';
 				}
+
+				// Le bloc vient de devenir visible : on prévient les scripts qui greffent des
+				// composants ayant besoin de mesurer leurs dimensions (CodeMirror se rend avec une
+				// hauteur nulle s'il est initialisé dans un conteneur en display:none). Comme pour
+				// 'chtw:block-added', ce fichier ignore qui écoute — il se contente de signaler.
+				document.dispatchEvent( new CustomEvent( 'chtw:block-expanded', {
+					detail: { blockElement: row }
+				} ) );
 			}
 		}
 
@@ -246,6 +254,12 @@
 			}
 
 			refreshMoveButtonsState(); //On met à jour l'état des boutons Monter /Descendre
+
+			// insertBefore() détache puis rattache le nœud : un composant déjà rendu à l'intérieur
+			// (CodeMirror) peut avoir besoin de se remesurer. On signale, libre aux abonnés d'agir.
+			document.dispatchEvent( new CustomEvent( 'chtw:block-moved', {
+				detail: { blockElement: row }
+			} ) );
 		} );
 
 		/* ------------------------------------------------------------
