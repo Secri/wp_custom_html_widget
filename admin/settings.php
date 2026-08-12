@@ -59,10 +59,40 @@ add_action( 'admin_init', 'chtw_assign_pending_block_ids', 5 ); // priorité 5 :
  * Ne fait rien si la requête courante n'est pas une soumission de notre propre formulaire de settings (vérifié via 'option_page', champ caché généré par settings_fields() dans settings-page-template.php).
  *
  * Une fois cette fonction exécutée, chtw_sanitize_blocks() ne reçoit plus que des blocs dont l'id est soit déjà 'widget_N' (bloc existant), soit invalide (bug, requête corrompue)
+ *
+ * POURQUOI DES CONTRÔLES DE DROITS ICI, ALORS QUE options.php EN FAIT DÉJÀ ?
+ *
+ * Parce que cette fonction ne s'exécute PAS depuis options.php : elle est accrochée à 'admin_init',
+ * qui se déclenche sur absolument toutes les pages de /wp-admin/, pour tout utilisateur connecté —
+ * y compris un simple abonné, et y compris sur profile.php ou index.php. Le seul filtre en place
+ * était la présence de 'option_page' dans $_POST, qui n'est qu'une convention de nommage : rien
+ * n'empêche de POSTer ce champ vers n'importe quelle page d'admin.
+ *
+ * Or cette fonction n'est pas en lecture seule : chtw_create_new_block() écrit en base
+ * (update_option( 'chtw_next_id', ... )). Sans les trois gardes ci-dessous, n'importe quel compte
+ * connecté pouvait donc déclencher autant d'écritures qu'il le souhaitait, et faire grimper le
+ * compteur d'id indéfiniment. Pas de fuite ni de corruption de données — l'enregistrement réel
+ * reste protégé par options.php — mais une écriture déclenchable hors du parcours prévu.
+ *
+ * On retourne silencieusement au lieu d'appeler check_admin_referer(), qui interromprait la
+ * requête avec un wp_die() : une requête illégitime n'a aucune raison de casser l'affichage d'une
+ * page d'admin sans rapport, et une requête légitime dont le nonce a expiré sera de toute façon
+ * rejetée proprement quelques instants plus tard par options.php, avec le message adapté.
  */
 function chtw_assign_pending_block_ids() {
 
 	if ( empty( $_POST['option_page'] ) || 'chtw_settings_group' !== $_POST['option_page'] ) { // Si ce n'est pas le formulaire settings_page_template.php qui est soumis
+		return; // On ne fait rien
+	}
+
+	if ( ! current_user_can( 'manage_options' ) ) { // Même capability que add_options_page() et que le contrôle en tête de chtw_render_settings_page()
+		return; // On ne fait rien
+	}
+
+	// Nonce posé par settings_fields( 'chtw_settings_group' ) : wp_nonce_field() y génère l'action
+	// "{$option_group}-options", soit 'chtw_settings_group-options', dans un champ '_wpnonce'.
+	// C'est exactement celui que options.php vérifiera ensuite de son côté.
+	if ( empty( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'chtw_settings_group-options' ) ) {
 		return; // On ne fait rien
 	}
 
@@ -79,7 +109,7 @@ function chtw_assign_pending_block_ids() {
 		$raw_id = sanitize_key( $raw_block['id'] ); // On sanitize l'id
 
 		if ( 0 === strpos( $raw_id, 'new_' ) ) { // Si cet id est un id temporaire (qui commence par new_ = attribué en JS)
-			$new_block                            = chtw_create_new_block(); // On crée un nouveau bloc avec un ID définitif
+			$new_block = chtw_create_new_block(); // On crée un nouveau bloc avec un ID définitif
 			/* ATTENTION — modification directe de $_POST['chtw_blocks']
 			* ce n'est PAS un contournement de la sanitization, ni une faille : $_POST n'est ici que le vecteur de transport entre cette fonction et le
 			* sanitize_callback natif de WordPress (chtw_sanitize_blocks(), invoqué plus tard par options.php).
