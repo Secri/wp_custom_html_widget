@@ -120,7 +120,7 @@ function chtw_render_block_row( array $block, $index ) {
 					<select class="chtw-taxonomy-select" name="<?php echo esc_attr( $name_base ); ?>[taxonomy]">
 						<option value=""><?php esc_html_e( '— Choisir une taxonomie —', 'chtw' ); ?></option>
 						<?php foreach ( $taxonomies as $tax_slug => $tax_object ) : ?>
-							<option value="<?php echo esc_attr( $tax_slug ); ?>" <?php selected( $taxonomy, $tax_slug ); ?>>
+							<option value="<?php echo esc_attr( $tax_slug ); ?>" data-hierarchical="<?php echo $tax_object->hierarchical ? '1' : '0'; //Lu par field-repeater.js pour activer ou non la case "Inclure tous les enfants", sans effet sur une taxonomie plate ?>" <?php selected( $taxonomy, $tax_slug ); ?>>
 								<?php echo esc_html( $tax_object->labels->name ); ?>
 							</option>
 						<?php endforeach; ?>
