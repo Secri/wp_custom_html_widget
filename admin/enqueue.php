@@ -28,9 +28,9 @@ function chtw_enqueue_admin_assets( $hook_suffix ) {
 
 	wp_enqueue_style(
 		'chtw-admin-style',
-		plugin_dir_url( __DIR__ ) . 'assets/css/admin-style.css',
+		CHTW_PLUGIN_URL . 'assets/css/admin-style.css',
 		array(),
-		filemtime( plugin_dir_path( __DIR__ ) . 'assets/css/admin-style.css' ) //Timestamp de la dernière modif du fichier en tant que paramètre pour $version
+		filemtime( CHTW_PLUGIN_PATH . 'assets/css/admin-style.css' ) //Timestamp de la dernière modif du fichier en tant que paramètre pour $version
 	);
 
 	/* 
@@ -41,9 +41,9 @@ function chtw_enqueue_admin_assets( $hook_suffix ) {
 
 	wp_enqueue_script(
 		'chtw-field-repeater',
-		plugin_dir_url( __DIR__ ) . 'assets/js/field-repeater.js',
+		CHTW_PLUGIN_URL . 'assets/js/field-repeater.js',
 		array(), // vanilla JS, aucune dépendance
-		filemtime( plugin_dir_path( __DIR__ ) . 'assets/js/field-repeater.js' ), //Timestamp de la dernière modif du fichier en tant que paramètre pour $version
+		filemtime( CHTW_PLUGIN_PATH . 'assets/js/field-repeater.js' ), //Timestamp de la dernière modif du fichier en tant que paramètre pour $version
 		true // chargé en pied de page
 	);
 
