@@ -46,7 +46,7 @@ function chtw_enqueue_code_editor( $hook_suffix ) {
 
 		array( 'code-editor', 'chtw-field-repeater' ), // les dépendances - On a besoin de chtw-field-repeater parce que c'est ce script qui génère l'événement chtw:block-added
 
-		filemtime( CHTW_PLUGIN_PATH . 'assets/js/code-editor-init.js' ), //cache busting
+		chtw_asset_version( 'assets/js/code-editor-init.js' ), //cache busting
 
 		true //On charge en pied de page
 
