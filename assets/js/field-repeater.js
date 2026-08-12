@@ -164,6 +164,24 @@
 		let nextFieldIndex = getHighestFieldIndex() + 1;
 
 		/**
+		 * Affiche ou masque le message "Aucun bloc pour le moment" selon que la liste est vide.
+		 *
+		 * On bascule l'attribut hidden plutôt que de retirer le paragraphe du DOM : détruire le
+		 * nœud rendrait le message irrécupérable après suppression du dernier bloc, sauf à
+		 * dupliquer sa chaîne traduite côté JS. Appelée aux mêmes moments que refreshMoveButtonsState()
+		 * et refreshAddButtonState(), c'est-à-dire après tout ajout ou suppression de bloc.
+		 */
+		function refreshEmptyState() {
+			const notice = blocksList.querySelector( '.chtw-no-blocks' );
+			if ( ! notice ) { //Mécanisme défensif - le paragraphe est rendu par PHP, mais on ne présume pas de sa présence
+				return;
+			}
+			notice.hidden = blocksList.querySelectorAll( '.chtw-accordion' ).length > 0;
+		}
+
+		refreshEmptyState();
+
+		/**
 		 * Retourne la limite de blocs (CHTW_MAX_BLOCKS), lue sur l'attribut data-max-blocks du
 		 * bouton "Ajouter un bloc".
 		 *
@@ -241,6 +259,7 @@
 			}
 			refreshMoveButtonsState(); //On met à jour l'état des boutons monter /descendre
 			refreshAddButtonState(); //On réactive le bouton "Ajouter" si on repasse sous la limite
+			refreshEmptyState(); //On réaffiche le message d'invite si on vient de supprimer le dernier bloc
 		} );
 
 		/* ------------------------------------------------------------
@@ -329,12 +348,6 @@
 				field.name = field.name.replace( '__INDEX__', fieldIndex ); //replace() sans /g : le placeholder n'apparaît qu'une fois par name
 			} );
 
-			// Retire le message "Aucun bloc pour le moment" s'il est présent devenu obsolète dès qu'un premier bloc est ajouté.
-			const emptyNotice = blocksList.querySelector( '.chtw-no-blocks' );
-			if ( emptyNotice ) {
-				emptyNotice.parentNode.removeChild( emptyNotice );
-			}
-
 			// Renseigne l'id temporaire dans le champ caché ET dans l'attribut data-block-id
 			const idField = newRow.querySelector( '.chtw-block-id-field' );
 			if ( idField ) {
@@ -363,6 +376,7 @@
 			blocksList.appendChild( fragment ); //La navigateur "déballe" le contenu du fragment et insère donc l'accordéon dans la liste des blocs - A noter que blocksList.appendChild( newRow ); aurait fonctionné aussi
 			refreshMoveButtonsState(); //on met à jour l'état des boutons Monter /Descendre
 			refreshAddButtonState(); //On désactive le bouton "Ajouter" si on vient d'atteindre la limite
+			refreshEmptyState(); //On masque le message d'invite, devenu obsolète dès le premier bloc
 
 			// On utilise dispatchEvent() pour créer un événement afin de prévenir les fichiers JS qui gèrent les dépendances (Select2, CodeMirror) qu'un nouveau bloc vient d'être inséré dans le DOM
 			document.dispatchEvent( new CustomEvent( 'chtw:block-added', {
