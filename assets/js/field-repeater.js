@@ -112,6 +112,36 @@
 		refreshMoveButtonsState();
 
 		/**
+		 * Retourne le plus grand index de champ (le N de chtw_blocks[N][...]) actuellement
+		 * présent dans la liste, ou -1 si la liste est vide.
+		 *
+		 * À ne pas confondre avec newBlockCounter ci-dessus : cet index-ci est l'emplacement du
+		 * bloc dans le tableau $_POST['chtw_blocks'] et cohabite avec ceux rendus par PHP, alors
+		 * que newBlockCounter ne sert qu'à générer un id temporaire ('new_N') propre aux blocs
+		 * créés côté client.
+		 *
+		 * @return {number}
+		 */
+		function getHighestFieldIndex() {
+			let highest = -1;
+
+			blocksList.querySelectorAll( '.chtw-block-id-field' ).forEach( ( field ) => {
+				const match = field.name.match( /^chtw_blocks\[(\d+)\]/ ); //On extrait le N de chtw_blocks[N][id]
+				if ( match ) {
+					highest = Math.max( highest, parseInt( match[ 1 ], 10 ) );
+				}
+			} );
+
+			return highest;
+		}
+
+		// Compteur d'index monotone : on repart au-dessus du plus grand index rendu par PHP et on
+		// n'en réutilise jamais un. Un simple décompte des blocs présents ne suffirait pas : après
+		// suppression d'un bloc intermédiaire, ce décompte retomberait sur un index encore utilisé
+		// et les deux blocs s'écraseraient mutuellement dans $_POST.
+		let nextFieldIndex = getHighestFieldIndex() + 1;
+
+		/**
 		 * Désactive le bouton "Ajouter un bloc" si le nombre de blocs a atteint
 		 * CHTW_MAX_BLOCKS (cf chtwRepeaterData.maxBlocks, injecté depuis
 		 * settings.php via enqueue.php), le réactive sinon. Appelée après tout
@@ -173,10 +203,14 @@
 		/* ------------------------------------------------------------
 		 * 3bis. Réordonnancement d'un bloc (monter / descendre)
 		 *
-		 * L'ordre d'affichage front suit l'ordre de soumission du tableau
-		 * chtw_blocks[] (positionnel, cf chtw_render_block_row()) : réordonner
-		 * visuellement le bloc dans le DOM avant soumission suffit donc à
-		 * changer son ordre d'affichage, sans logique PHP supplémentaire.
+		 * L'ordre d'affichage front suit l'ordre d'apparition des clés dans
+		 * $_POST['chtw_blocks'], que le navigateur sérialise dans l'ordre du DOM :
+		 * réordonner visuellement le bloc avant soumission suffit donc à changer
+		 * son ordre d'affichage, sans logique PHP supplémentaire.
+		 *
+		 * Les index de champ (chtw_blocks[N][...]) n'ont PAS à être renumérotés ici :
+		 * PHP conserve l'ordre d'insertion des clés, pas leur valeur numérique, et
+		 * chtw_sanitize_blocks() réindexe de toute façon via $clean_blocks[].
 		 * ---------------------------------------------------------- */
 
 		blocksList.addEventListener( 'click', ( event ) => { //Délégation d'événement (pareil que précédemment)
@@ -234,6 +268,17 @@
 
 			const fragment = template.content.cloneNode( true ); //On duplique le fragment du template du bloc (un fragment n'est PAS un élément HTML)
 			const newRow   = fragment.querySelector( '.chtw-accordion' ); //On assigne à newRow l'élément HTML parent qui contient le bloc complet
+
+			// Substitution du placeholder d'index posé par chtw_render_block_row() : les name du
+			// template valent 'chtw_blocks[__INDEX__][html]' et doivent devenir 'chtw_blocks[7][html]'.
+			// Sans cette étape, tous les blocs ajoutés dans la même session partageraient l'index
+			// littéral '__INDEX__' et fusionneraient en un seul élément de tableau côté PHP.
+			const fieldIndex = nextFieldIndex;
+			nextFieldIndex += 1;
+
+			newRow.querySelectorAll( '[name]' ).forEach( ( field ) => {
+				field.name = field.name.replace( '__INDEX__', fieldIndex ); //replace() sans /g : le placeholder n'apparaît qu'une fois par name
+			} );
 
 			// Retire le message "Aucun bloc pour le moment" s'il est présent devenu obsolète dès qu'un premier bloc est ajouté.
 			const emptyNotice = blocksList.querySelector( '.chtw-no-blocks' );
