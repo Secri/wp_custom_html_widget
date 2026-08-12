@@ -234,8 +234,22 @@ function chtw_sanitize_blocks( $raw_blocks ) {
 
 		$include_children = ! empty( $raw_block['include_children'] ); // Inclusion des taxonomies enfants : Checkbox HTML classique - présente dans $_POST seulement si cochée
 
-		// substr() après sanitize_text_field() : on nettoie d'abord les caractères indésirables, puis on tronque à la longueur maximale autorisée (cf CHTW_BLOCK_TITLE_MAX_LENGTH, cohérente avec le maxlength HTML posé sur le champ dans settings-page-template.php).
-		$title = isset( $raw_block['title'] ) ? substr( sanitize_text_field( $raw_block['title'] ), 0, CHTW_BLOCK_TITLE_MAX_LENGTH ) : '';
+		// Troncature APRÈS sanitize_text_field() : on nettoie d'abord les caractères indésirables, puis on
+		// coupe à la longueur maximale autorisée (cf CHTW_BLOCK_TITLE_MAX_LENGTH, cohérente avec le maxlength
+		// HTML posé sur le champ dans settings-page-template.php). Cette troncature serveur reste nécessaire
+		// même avec ce maxlength, qui n'est qu'une aide à la saisie et se contourne trivialement.
+		//
+		// mb_substr() et NON substr() : substr() compte des octets, le maxlength HTML compte des caractères.
+		// En UTF-8 un « é » pèse 2 octets, un « € » 3, un emoji 4 — un titre conforme à la limite affichée
+		// serait donc coupé bien avant sa fin, et surtout la coupure pourrait tomber au milieu d'une séquence
+		// multi-octets. La chaîne cesserait alors d'être de l'UTF-8 valide, wpdb en retirerait l'octet orphelin
+		// à l'insertion, et le préfixe de longueur posé par serialize() ne correspondrait plus au contenu :
+		// unserialize() échouerait à la relecture et chtw_get_blocks() retournerait un tableau vide, faisant
+		// disparaître TOUS les blocs à cause d'un seul accent mal coupé.
+		//
+		// Aucune dépendance à ajouter : WordPress fournit un repli mb_substr() dans wp-includes/compat.php
+		// lorsque l'extension mbstring est absente.
+		$title = isset( $raw_block['title'] ) ? mb_substr( sanitize_text_field( $raw_block['title'] ), 0, CHTW_BLOCK_TITLE_MAX_LENGTH ) : '';
 
 		$html = isset( $raw_block['html'] ) ? chtw_sanitize_html_block( $raw_block['html'] ) : '';
 
