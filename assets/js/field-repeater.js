@@ -164,6 +164,59 @@
 		let nextFieldIndex = getHighestFieldIndex() + 1;
 
 		/**
+		 * Active ou désactive la case "Inclure tous les enfants" d'un bloc selon que la taxonomie
+		 * sélectionnée est hiérarchique.
+		 *
+		 * Sur une taxonomie plate (étiquettes et assimilées), l'option est inerte : get_term_children()
+		 * s'appuie sur _get_term_hierarchy(), qui retourne un tableau vide dans ce cas. La case ne
+		 * ferait donc que promettre un comportement qui n'arrivera jamais.
+		 *
+		 * Elle est décochée EN PLUS d'être désactivée. Sans cela, une case cochée sur une taxonomie
+		 * plate — donc sans effet — resterait cochée après bascule vers une taxonomie hiérarchique,
+		 * et étendrait silencieusement le ciblage à toute la descendance sans que personne ne l'ait
+		 * décidé (le changement de taxonomie réinitialise les termes, mais pas cette case).
+		 * L'attribut disabled empêche par ailleurs toute soumission : côté PHP, une clé absente et
+		 * une case décochée sont traitées à l'identique par ! empty().
+		 *
+		 * @param {HTMLElement} row Le bloc concerné.
+		 */
+		function refreshIncludeChildrenState( row ) {
+			const taxonomySelect = row.querySelector( '.chtw-taxonomy-select' );
+			const label          = row.querySelector( '.chtw-include-children-label' );
+			const checkbox       = row.querySelector( '.chtw-include-children-checkbox' );
+
+			if ( ! taxonomySelect || ! label || ! checkbox ) { //Mécanisme défensif - on ne présume pas de la présence des trois éléments
+				return;
+			}
+
+			const selectedOption = taxonomySelect.options[ taxonomySelect.selectedIndex ];
+			const isHierarchical = '1' === selectedOption?.dataset.hierarchical; //Chaînage optionnel : selectedIndex vaut -1 si aucune option n'est sélectionnée
+
+			if ( isHierarchical ) {
+				checkbox.disabled = false;
+				label.classList.remove( 'chtw-option-unavailable' );
+				return; // on ne touche pas à checked : l'utilisateur retrouve son réglage tel quel
+			}
+
+			checkbox.checked  = false;
+			checkbox.disabled = true;
+			label.classList.add( 'chtw-option-unavailable' );
+		}
+
+		// État initial des blocs rendus par PHP.
+		blocksList.querySelectorAll( '.chtw-accordion' ).forEach( refreshIncludeChildrenState );
+
+		// Le select de taxonomie est un <select> natif — seul celui des termes passe par Select2 —
+		// un écouteur classique suffit donc, sans dépendance à jQuery.
+		blocksList.addEventListener( 'change', ( event ) => {
+			const taxonomySelect = event.target.closest( '.chtw-taxonomy-select' );
+			if ( ! taxonomySelect ) {
+				return;
+			}
+			refreshIncludeChildrenState( taxonomySelect.closest( '.chtw-accordion' ) );
+		} );
+
+		/**
 		 * Affiche ou masque le message "Aucun bloc pour le moment" selon que la liste est vide.
 		 *
 		 * On bascule l'attribut hidden plutôt que de retirer le paragraphe du DOM : détruire le
@@ -377,6 +430,7 @@
 			refreshMoveButtonsState(); //on met à jour l'état des boutons Monter /Descendre
 			refreshAddButtonState(); //On désactive le bouton "Ajouter" si on vient d'atteindre la limite
 			refreshEmptyState(); //On masque le message d'invite, devenu obsolète dès le premier bloc
+			refreshIncludeChildrenState( newRow ); //Aucune taxonomie n'est encore choisie : la case part désactivée
 
 			// On utilise dispatchEvent() pour créer un événement afin de prévenir les fichiers JS qui gèrent les dépendances (Select2, CodeMirror) qu'un nouveau bloc vient d'être inséré dans le DOM
 			document.dispatchEvent( new CustomEvent( 'chtw:block-added', {
