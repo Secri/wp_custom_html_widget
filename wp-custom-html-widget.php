@@ -28,6 +28,43 @@ if ( ! defined( 'ABSPATH' ) ) exit; // sécurité : pas d'accès direct au fichi
 define( 'CHTW_PLUGIN_PATH', plugin_dir_path( __FILE__ ) ); // chemin serveur, pour require_once et filemtime()
 define( 'CHTW_PLUGIN_URL', plugin_dir_url( __FILE__ ) );   // URL publique, pour wp_enqueue_script() et wp_enqueue_style()
 
+/**
+ * Version du plugin.
+ *
+ * ATTENTION : doit rester synchronisée manuellement avec l'en-tête « Version: » ci-dessus, qui est
+ * la seule source lue par WordPress. La lire dynamiquement imposerait get_plugin_data(), qui charge
+ * des fichiers d'administration et n'est pas disponible en front — remède pire que le mal ici.
+ *
+ * Sert uniquement de repli à chtw_asset_version().
+ */
+define( 'CHTW_VERSION', '0.1.0' );
+
+/**
+ * Retourne le paramètre de version à passer à wp_enqueue_style() / wp_enqueue_script() pour un asset.
+ *
+ * Retourne la date de dernière modification du fichier (cache busting automatique : l'URL générée
+ * change dès que le fichier est modifié, ce qui force le navigateur à le retélécharger au lieu de
+ * resservir sa copie en cache), ou la version du plugin en repli si le fichier est introuvable.
+ *
+ * Ce repli évite qu'un déploiement incomplet ne remplisse le journal d'erreurs de warnings
+ * « stat failed » — filemtime() n'échoue pas silencieusement, elle émet un warning et retourne
+ * false, valeur que WordPress traduit ensuite par sa propre version dans l'URL de l'asset.
+ *
+ * Définie dans ce fichier et non dans admin/enqueue.php : elle est utilisée aussi par
+ * admin/term-select.php et admin/code-editor.php, et la loger dans l'un d'eux recréerait la
+ * dépendance implicite à l'ordre des require_once que la centralisation vient de supprimer.
+ *
+ * @param string $relative_path Chemin depuis la racine du plugin, ex: 'assets/js/field-repeater.js'
+ * @return string|int Timestamp Unix, ou CHTW_VERSION si le fichier est absent.
+ */
+function chtw_asset_version( $relative_path ) {
+
+	$absolute_path = CHTW_PLUGIN_PATH . $relative_path;
+
+	return file_exists( $absolute_path ) ? filemtime( $absolute_path ) : CHTW_VERSION;
+
+}
+
 /* ------------------------------------------------------------------------
  * Constantes de configuration
  *
