@@ -348,15 +348,21 @@
 				return;
 			}
 
+			// Les deux branches déplacent le MÊME nœud, celui du bloc cliqué. C'est ce qui garantit
+			// que le flash ne concerne que lui : insertBefore() sur un nœud déjà présent équivaut à
+			// un retrait suivi d'une réinsertion, et réinsérer un élément dans le document relance
+			// ses animations CSS. Faire descendre un bloc en remontant son voisin — ce qui produit
+			// pourtant le bon ordre final — rejouait donc le flash de ce voisin s'il portait encore
+			// la classe d'un déplacement précédent.
 			if ( moveUpButton ) { //Si le bouton cliqué est "Monter"
 				const previousRow = row.previousElementSibling; //on cible le bloc précédent
 				if ( previousRow ) { //S'il existe
-					blocksList.insertBefore( row, previousRow ); //on met le bloc row au dessus du précédent (action de monter)
+					blocksList.insertBefore( row, previousRow ); //on insère le bloc juste avant le précédent (action de monter)
 				}
 			} else {
 				const nextRow = row.nextElementSibling; //On cible le bloc suivant
 				if ( nextRow ) {
-					blocksList.insertBefore( nextRow, row ); //on met le bloc row en dessous du bloc suivant (action de descendre)
+					blocksList.insertBefore( row, nextRow.nextElementSibling ); //on insère le bloc juste après le suivant (action de descendre). Si le suivant est le dernier, nextElementSibling vaut null et insertBefore() ajoute alors en fin de liste — comportement voulu.
 				}
 			}
 
