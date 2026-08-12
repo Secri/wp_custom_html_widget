@@ -93,7 +93,7 @@
 				}
 			} else {
 				toggle.setAttribute( 'aria-expanded', 'true' );
-				body.style.display = '';
+				body.style.display = 'block'; //'block' et NON '' : une chaîne vide RETIRE la déclaration inline, ce qui laisse s'appliquer le display:none de la feuille de style (cf .chtw-accordion-body dans admin-style.css) — le bloc resterait invisible
 				if ( icon ) {
 					icon.textContent = '▼';
 				}
@@ -419,7 +419,7 @@
 				toggle.setAttribute( 'aria-controls', body.id );
 
 				toggle.setAttribute( 'aria-expanded', 'true' ); //On signale que l'accordéon est déplié
-				body.style.display = ''; //On affiche le corps du bloc
+				body.style.display = 'block'; //'block' et NON '' : une chaîne vide RETIRE la déclaration inline, ce qui laisse s'appliquer le display:none de la feuille de style (cf .chtw-accordion-body dans admin-style.css) — le bloc resterait invisible
 				const icon = toggle.querySelector( '.chtw-accordion-toggle-icon' ); //On met la bonne icone qui indique que l'accordéon est déplié
 				if ( icon ) {
 					icon.textContent = '▼';
