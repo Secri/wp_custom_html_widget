@@ -33,11 +33,26 @@ function chtw_block_matches_post( array $block, $post_id ) {
 
 	$target_term_ids = chtw_expand_target_term_ids( $block ); //Retourne l'ensemble des term_id associés à un bloc HTML
 
-	$post_term_ids = wp_get_post_terms( $post_id, $taxonomy, array( 'fields' => 'ids' ) );
+	// get_the_terms() plutôt que wp_get_post_terms() : elle lit le cache des relations objet-termes,
+	// que WordPress a déjà amorcé via update_object_term_cache() en exécutant la requête principale
+	// de la page. Les termes du post sont donc en mémoire avant même que ce widget ne s'exécute.
+	// wp_get_post_terms(), elle, reconstruit une WP_Term_Query à chaque appel — servie par un cache
+	// de second niveau, certes, mais après avoir refait tout le travail de construction de requête.
+	//
+	// Aucun risque de régression : si le cache n'était pas amorcé, get_the_terms() appellerait
+	// elle-même wp_get_object_terms() puis l'amorcerait pour les appels suivants.
+	//
+	// À noter : elle retourne des objets WP_Term (d'où le wp_list_pluck()), false — et non un
+	// tableau vide — quand le post n'a aucun terme dans cette taxonomie, et applique le filtre
+	// 'get_the_terms'. Ce dernier point est un changement de comportement assumé : le ciblage voit
+	// désormais les mêmes termes que le thème et les autres extensions.
+	$post_terms = get_the_terms( $post_id, $taxonomy );
 
-	if ( is_wp_error( $post_term_ids ) || empty( $post_term_ids ) ) {
+	if ( is_wp_error( $post_terms ) || empty( $post_terms ) ) {
 		return false; // pas de terme assigné à ce post dans cette taxonomie, ou taxonomie invalide pour ce post type
 	}
+
+	$post_term_ids = wp_list_pluck( $post_terms, 'term_id' );
 
 	return count( array_intersect( $target_term_ids, $post_term_ids ) ) > 0; //Retourne true s'il les deux tableaux (les term_id du post et les term_id du bloc) contiennent au moins 1 fois un terme commun
 }
