@@ -30,9 +30,12 @@ if ( ! defined( 'ABSPATH' ) ) exit; // sécurité : pas d'accès direct au fichi
  *     @type array  $term_ids Liste de term_id ciblés.
  *     @type string $title    Titre optionnel du bloc.
  * }
+ * @param int|string $index Index de la ligne dans le tableau chtw_blocks soumis. Entier pour un
+ *                          bloc existant, chaîne '__INDEX__' pour le template caché : field-repeater.js
+ *                          y substitue un index réel au moment du clonage.
  * @return string HTML de la ligne.
  */
-function chtw_render_block_row( array $block ) {
+function chtw_render_block_row( array $block, $index ) {
 
 	$id               = isset( $block['id'] ) ? $block['id'] : '';
 	$html             = isset( $block['html'] ) ? $block['html'] : '';
@@ -42,8 +45,18 @@ function chtw_render_block_row( array $block ) {
 	$title            = isset( $block['title'] ) ? $block['title'] : '';
 
 	// Préfixe de name= utilisé pour tous les champs de cette ligne.
-	// Format tableau simple indicé par position (chtw_blocks[][html]), pas indicé par id !
-	$name_base = 'chtw_blocks[]';
+	//
+	// L'index est OBLIGATOIREMENT explicite : chtw_blocks[0][html], pas chtw_blocks[][html].
+	// PHP ouvre un nouvel élément de tableau à CHAQUE crochet vide rencontré, sans mémoire du
+	// champ précédent : 'chtw_blocks[][id]=x&chtw_blocks[][title]=y' ne produit pas un bloc à
+	// deux clés, mais deux blocs à une clé — donc un bloc rejeté faute d'id, et un bloc sans
+	// contenu. L'index explicite est le seul moyen de regrouper les champs d'une même ligne.
+	//
+	// Ces index n'ont pas besoin d'être contigus ni ordonnés : chtw_sanitize_blocks() réindexe
+	// via $clean_blocks[], et PHP conserve l'ordre d'apparition des clés dans $_POST — l'ordre
+	// d'affichage front suit donc toujours l'ordre du DOM au moment de la soumission, y compris
+	// après usage des boutons monter/descendre.
+	$name_base = 'chtw_blocks[' . $index . ']';
 
 	// Liste des taxonomies publiques du site pour le select de ciblage.
 	$taxonomies = get_taxonomies( array( 'public' => true ), 'objects' );
@@ -217,8 +230,14 @@ function chtw_render_settings_page() {
 				if ( empty( $blocks ) ) {
 					echo '<p class="chtw-no-blocks">' . esc_html__( 'Aucun bloc pour le moment. Cliquez sur "Ajouter un bloc" pour commencer.', 'chtw' ) . '</p>';
 				} else {
+					// Index recalculé ici plutôt que réutilisé depuis les clés de $blocks : on
+					// garantit une numérotation contiguë à partir de 0, quelle que soit la forme
+					// du tableau lu en base (import manuel, réindexation partielle...).
+					$row_index = 0;
+
 					foreach ( $blocks as $block ) {
-						echo chtw_render_block_row( $block );
+						echo chtw_render_block_row( $block, $row_index );
+						$row_index++;
 					}
 				}
 				?>
@@ -236,26 +255,29 @@ function chtw_render_settings_page() {
 
 		<!--
 			Template caché cloné par field-repeater.js à chaque clic sur "Ajouter un bloc".
-			Bloc vide, id volontairement laissé vide : les champs utilisent le tableau
-			positionnel chtw_blocks[][xxx] (cf chtw_render_block_row()), donc aucun
-			placeholder d'index n'est nécessaire dans les name. Le JS n'a besoin de
-			renseigner qu'un id temporaire unique (ex: 'new_1', 'new_2'...) dans le
-			champ caché 'chtw-block-id-field' du clone (permet de distinguer les nouveaux
-			blocs entre eux jusqu'à la sauvegarde (cf chtw_sanitize_blocks()).
-			Ce template n'est jamais soumis tel quel : le <template> HTML natif n'est
-			de toute façon jamais inclus dans le rendu ni sérialisé par le navigateur
-			tant qu'il n'a pas été explicitement cloné en JS.
+			Bloc vide, rendu avec l'index littéral '__INDEX__' dans tous ses name= : le JS
+			substitue un index réel (unique pour la page en cours) au moment du clonage, sans
+			quoi tous les blocs ajoutés partageraient le même index et s'écraseraient entre eux
+			dans $_POST. Le JS renseigne en plus un id temporaire unique ('new_1', 'new_2'...)
+			dans le champ caché 'chtw-block-id-field' du clone, qui permet de distinguer les
+			nouveaux blocs entre eux jusqu'à la sauvegarde (cf chtw_assign_pending_block_ids()).
+			Ce template n'est jamais soumis tel quel : le <template> HTML natif n'est de toute
+			façon jamais sérialisé par le navigateur tant qu'il n'a pas été cloné en JS — le
+			littéral '__INDEX__' ne peut donc jamais atteindre chtw_sanitize_blocks().
 		-->
 		<template id="chtw-block-template">
 			<?php
-			echo chtw_render_block_row( array(
-				'id'       => '',
-				'html'     => '',
-				'taxonomy' => '',
-				'term_ids' => array(),
-				'include_children' => false,
-				'title'    => '',
-			) );
+			echo chtw_render_block_row(
+				array(
+					'id'               => '',
+					'html'             => '',
+					'taxonomy'         => '',
+					'term_ids'         => array(),
+					'include_children' => false,
+					'title'            => '',
+				),
+				'__INDEX__'
+			);
 			?>
 		</template>
 
