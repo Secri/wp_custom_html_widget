@@ -119,6 +119,14 @@
 	color: #646970;
 }
 
+/* Option inapplicable à la taxonomie sélectionnée : la case correspondante est décochée et
+   désactivée par field-repeater.js, ce style ne fait que rendre cet état lisible. Le contrôle
+   reste visible — l'utilisateur voit que l'option existe et qu'elle ne s'applique pas ici. */
+.chtw-option-unavailable {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
 #chtw-blocks-list {
 	margin-bottom: 16px;
 }
