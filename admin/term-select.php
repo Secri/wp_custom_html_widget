@@ -22,7 +22,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit; // sécurité : pas d'accès direct au fichier
 
-define( 'CHTW_TERM_SEARCH_PER_PAGE', 20 ); //Nombre de termes retournés par page de résultats AJAX. Correspond à la pagination native de Select2 (scroll infini au-delà de ce nombre).
+define( 'CHTW_TERM_SEARCH_PER_PAGE', 20 ); //Nombre de termes RETOURNÉS par page de résultats AJAX. Correspond à la pagination native de Select2 (scroll infini au-delà de ce nombre). Attention : ce n'est pas la valeur passée telle quelle à get_terms(), qui en demande une de plus pour détecter l'existence d'une page suivante (cf chtw_handle_term_search_request()).
 
 add_action( 'admin_enqueue_scripts', 'chtw_enqueue_term_select' );
 add_action( 'wp_ajax_chtw_search_terms', 'chtw_handle_term_search_request' ); //Sera déclenché par admin-ajax.php lorsqu'un fichier JS enverra le paramètre action chtw_search_terms
@@ -101,7 +101,13 @@ function chtw_handle_term_search_request() {
 	$args = array( //Construction des arguments de recherche
 		'taxonomy'   => $taxonomy,
 		'hide_empty' => false, // un terme peut être choisi comme cible même s'il n'a encore aucun contenu associé
-		'number'     => CHTW_TERM_SEARCH_PER_PAGE, //Constante définie en début de script
+		
+		// On demande volontairement UN terme de plus que la taille de page : sa présence (ou son
+		// absence) dans le résultat suffit à renseigner pagination.more, dont le scroll infini de
+		// Select2 n'a besoin que comme booléen. Ce terme excédentaire est retiré avant l'envoi de
+		// la réponse — il ne sert qu'à sonder l'existence d'une page suivante, en une seule requête
+		// au lieu de deux (l'endpoint est sollicité à chaque frappe et à chaque cran de scroll).
+		'number'     => CHTW_TERM_SEARCH_PER_PAGE + 1,
 		'offset'     => ( $page - 1 ) * CHTW_TERM_SEARCH_PER_PAGE, //Page 1 => offset 0 => les 20 premiers résultat | Page 2 => offset 20 => les 20 suivants
 		'orderby'    => 'name', //Tri en fonction du libellé
 		'order'      => 'ASC', //Ordre alphabétique
@@ -117,13 +123,10 @@ function chtw_handle_term_search_request() {
 		wp_send_json_error( array( 'message' => $terms->get_error_message() ), 500 );
 	}
 
-	// On demande une page de plus que nécessaire pour savoir s'il reste des résultats au-delà (pagination.more), sans recompter le total exact
-	// (scroll infini Select2 n'a besoin que d'un booléen, pas d'un total exact).
-	$has_more_args             = $args;
-	$has_more_args['number']   = 1;
-	$has_more_args['offset']   = $page * CHTW_TERM_SEARCH_PER_PAGE;
-	$next_page_probe           = get_terms( $has_more_args );
-	$has_more                  = ! is_wp_error( $next_page_probe ) && ! empty( $next_page_probe );
+	// Ordre impératif : on teste d'abord, on tronque ensuite. Inverser les deux ferait
+	// systématiquement retomber $has_more à false et couperait le scroll infini.
+	$has_more = count( $terms ) > CHTW_TERM_SEARCH_PER_PAGE;
+	$terms    = array_slice( $terms, 0, CHTW_TERM_SEARCH_PER_PAGE ); //On écarte le terme excédentaire, qui n'a jamais eu vocation à être affiché
 
 	$results = array();
 
