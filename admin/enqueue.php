@@ -47,14 +47,16 @@ function chtw_enqueue_admin_assets( $hook_suffix ) {
 		true // chargé en pied de page
 	);
 
-	// Transmission des labels vers field-repeater.js dans un objectif de traduction
+	// Transmission des libellés vers field-repeater.js dans un objectif de traduction.
+	// CHTW_MAX_BLOCKS n'est volontairement PAS transmis ici : la limite passe par l'attribut
+	// data-max-blocks du bouton "Ajouter un bloc" (cf settings-page-template.php), un canal qui
+	// ne peut pas échouer indépendamment du fichier JS. Voir getMaxBlocks() dans field-repeater.js.
 	wp_localize_script(
 		'chtw-field-repeater', 
 		'chtwRepeaterData', //Nom de la variable globale qui sera envoyée au fichier JS
 		array( //Contenu de la variable chtwRepeaterData
 			'noTitleLabel'       => __( '(Bloc sans titre)', 'chtw' ),
 			'confirmRemoveLabel' => __( 'Supprimer ce bloc ? Cette action est irréversible une fois les modifications enregistrées.', 'chtw' ),
-			'maxBlocks'          => CHTW_MAX_BLOCKS, // définie dans settings.php, chargé avant ce fichier — cf ordre des require_once dans wp-custom-html-widget.php
 		)
 	);
 
