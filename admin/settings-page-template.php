@@ -58,8 +58,19 @@ function chtw_render_block_row( array $block, $index ) {
 	// après usage des boutons monter/descendre.
 	$name_base = 'chtw_blocks[' . $index . ']';
 
-	// Liste des taxonomies publiques du site pour le select de ciblage.
-	$taxonomies = get_taxonomies( array( 'public' => true ), 'objects' );
+	// Liste des taxonomies proposées comme cibles de ciblage.
+	//
+	// show_ui en plus de public : les deux critères coïncident pour presque toutes les taxonomies
+	// (show_ui prend par défaut la valeur de public), sauf pour post_format, que WordPress déclare
+	// public => true / show_ui => false. Sans ce second critère, « Formats » apparaîtrait dans le
+	// select alors que l'utilisateur ne peut pas affecter ces termes depuis l'administration, et
+	// que ceux-ci n'existent même pas en base tant qu'aucun article ne s'en est vu attribuer un —
+	// le ciblage resterait donc sans termes sélectionnables, puis serait signalé comme incomplet.
+	//
+	// Le critère retenu est bien « ce que l'utilisateur peut effectivement affecter à ses contenus »
+	// plutôt qu'une exclusion nominative de post_format : il couvre de la même façon les taxonomies
+	// tierces enregistrées sur ce modèle, sans avoir à les connaître.
+	$taxonomies = get_taxonomies( array( 'public' => true, 'show_ui' => true ), 'objects' );
 
 	ob_start(); //Buffer nécessaire car chtw_render_block_row() est aussi utilisé par chtw_render_settings_page()
 	?>
