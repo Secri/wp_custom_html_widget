@@ -30,7 +30,7 @@ function chtw_enqueue_admin_assets( $hook_suffix ) {
 		'chtw-admin-style',
 		CHTW_PLUGIN_URL . 'assets/css/admin-style.css',
 		array(),
-		filemtime( CHTW_PLUGIN_PATH . 'assets/css/admin-style.css' ) //Timestamp de la dernière modif du fichier en tant que paramètre pour $version
+		chtw_asset_version( 'assets/css/admin-style.css' ) //Cache busting : cf chtw_asset_version() dans le fichier principal
 	);
 
 	/* 
@@ -43,7 +43,7 @@ function chtw_enqueue_admin_assets( $hook_suffix ) {
 		'chtw-field-repeater',
 		CHTW_PLUGIN_URL . 'assets/js/field-repeater.js',
 		array(), // vanilla JS, aucune dépendance
-		filemtime( CHTW_PLUGIN_PATH . 'assets/js/field-repeater.js' ), //Timestamp de la dernière modif du fichier en tant que paramètre pour $version
+		chtw_asset_version( 'assets/js/field-repeater.js' ), //Cache busting : cf chtw_asset_version() dans le fichier principal
 		true // chargé en pied de page
 	);
 
