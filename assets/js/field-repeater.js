@@ -362,6 +362,21 @@
 
 			refreshMoveButtonsState(); //On met à jour l'état des boutons Monter /Descendre
 
+			// Retour visuel sur l'action réussie : l'échange est instantané et, quand les blocs sont
+			// repliés, rien ne permet de constater qu'il a eu lieu — a fortiori si deux blocs portent
+			// le même titre. Le flash répond à la seule question que se pose l'utilisateur : lequel
+			// vient de bouger ?
+			//
+			// Le retrait de la classe suivi de la lecture de offsetWidth n'est pas superflu : sans
+			// cette lecture, le navigateur regrouperait le retrait et l'ajout dans la même passe et
+			// ne verrait aucun changement net, donc ne rejouerait pas l'animation. Lire une propriété
+			// géométrique le force à recalculer la mise en page immédiatement, ce qui rend le retrait
+			// effectif avant l'ajout. Indispensable pour les clics successifs — on déplace rarement
+			// un bloc d'un seul cran.
+			row.classList.remove( 'chtw-block-moved' );
+			void row.offsetWidth; // eslint-disable-line no-void -- reflow forcé volontaire, cf commentaire ci-dessus
+			row.classList.add( 'chtw-block-moved' );
+
 			// insertBefore() détache puis rattache le nœud : un composant déjà rendu à l'intérieur
 			// (CodeMirror) peut avoir besoin de se remesurer. On signale, libre aux abonnés d'agir.
 			document.dispatchEvent( new CustomEvent( 'chtw:block-moved', {
