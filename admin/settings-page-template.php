@@ -68,11 +68,13 @@ function chtw_render_block_row( array $block, $index ) {
 
 		<input type="hidden" class="chtw-block-id-field" name="<?php echo esc_attr( $name_base ); ?>[id]" value="<?php echo esc_attr( $id ); ?>" />
 
-		<div class="chtw-accordion-header" role="button" tabindex="0" aria-expanded="false">
-			<span class="chtw-accordion-toggle-icon" aria-hidden="true">▶</span> <!-- caractère uncide brut équivalent à &#9654; -->
-			<h3 class="chtw-block-title-display">
-				<?php echo '' !== $title ? esc_html( $title ) : esc_html__( '(Bloc sans titre)', 'chtw' ); ?>
-			</h3>
+		<div class="chtw-accordion-header">
+			<button type="button" class="chtw-accordion-toggle" aria-expanded="false" aria-controls="chtw-accordion-body-<?php echo esc_attr( $index ); ?>">
+				<span class="chtw-accordion-toggle-icon" aria-hidden="true">▶</span> <!-- caractère unicode brut équivalent à &#9654; -->
+				<span class="chtw-block-title-display">
+					<?php echo '' !== $title ? esc_html( $title ) : esc_html__( '(Bloc sans titre)', 'chtw' ); ?>
+				</span>
+			</button>
 			<button type="button" class="button chtw-move-block-up" aria-label="<?php esc_attr_e( 'Monter ce bloc', 'chtw' ); ?>" title="<?php esc_attr_e( 'Monter ce bloc', 'chtw' ); ?>">
 				▲
 			</button>
@@ -84,7 +86,7 @@ function chtw_render_block_row( array $block, $index ) {
 			</button>
 		</div>
 
-		<div class="chtw-accordion-body">
+		<div class="chtw-accordion-body" id="chtw-accordion-body-<?php echo esc_attr( $index ); ?>">
 
 			<div class="chtw-block-row-header">
 				<label>
