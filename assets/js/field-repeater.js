@@ -39,46 +39,35 @@
 		 *    pour couvrir aussi les blocs ajoutés dynamiquement)
 		 * ---------------------------------------------------------- */
 
-		blocksList.addEventListener( 'click', ( event ) => { //On met l'écouteur sur toute la liste des blocks, on cible l'élément clilqué et on remonte jusqu'à l'accordéon parent
-			const header = event.target.closest( '.chtw-accordion-header' ); //On utilise la méthode .closest() pour cibler l'en-tête de l'accordéon qui a été cliqué
-			if ( ! header ) { //Mécanisme défensif - On ne fait rien si header est null
+		// La zone de bascule est un <button> frère des boutons d'action, et non plus l'en-tête
+		// entier qui les contenait. Deux conséquences : plus besoin d'exclure ces boutons du
+		// toggle (ils ne sont plus dans la zone cliquable), et plus besoin d'un handler 'keydown'
+		// dédié — le navigateur déclenche nativement un 'click' sur Entrée et Espace pour un
+		// <button>. Un seul écouteur remplace donc les deux précédents.
+		blocksList.addEventListener( 'click', ( event ) => { //On met l'écouteur sur toute la liste des blocs, on cible l'élément cliqué et on remonte jusqu'au bouton de bascule
+			const toggle = event.target.closest( '.chtw-accordion-toggle' ); //On utilise la méthode .closest() car le clic peut atterrir sur l'icône ou sur le titre, tous deux enfants du bouton
+			if ( ! toggle ) { //Mécanisme défensif - On ne fait rien si le clic n'a pas eu lieu dans un bouton de bascule
 				return;
 			}
-			// Un clic sur les boutons d'action de l'en-tête (supprimer, monter, descendre) ne doit pas aussi déclencher le toggle de l'accordéon !
-			if ( event.target.closest( '.chtw-remove-block, .chtw-move-block-up, .chtw-move-block-down' ) ) {
-				return;
-			}
-			toggleAccordion( header );
+			toggleAccordion( toggle );
 		} );
 
-		// Accessibilité clavier : Entrée / Espace sur l'en-tête doit aussi togglé.
-		blocksList.addEventListener( 'keydown', ( event ) => {
-			const header = event.target.closest( '.chtw-accordion-header' );
-			if ( ! header ) {
-				return;
-			}
-			if ( 'Enter' === event.key || ' ' === event.key ) {
-				event.preventDefault();
-				toggleAccordion( header );
-			}
-		} );
-
-		function toggleAccordion( header ) {
-			const row  = header.closest( '.chtw-accordion' );
+		function toggleAccordion( toggle ) {
+			const row  = toggle.closest( '.chtw-accordion' );
 			const body = row.querySelector( '.chtw-accordion-body' );
-			const icon = header.querySelector( '.chtw-accordion-toggle-icon' );
+			const icon = toggle.querySelector( '.chtw-accordion-toggle-icon' );
 
-			const isExpanded = 'true' === header.getAttribute( 'aria-expanded' ); //Subtilité liée à getAttribute() qui renvoie un string et non un booléen ! Le résultat de cette comparaison sera donc un booléen => True si aria-expanded="true" et False dans le cas contraire
+			const isExpanded = 'true' === toggle.getAttribute( 'aria-expanded' ); //Subtilité liée à getAttribute() qui renvoie un string et non un booléen ! Le résultat de cette comparaison sera donc un booléen => True si aria-expanded="true" et False dans le cas contraire
 
 			//Toogle de l'accordéon ouvert /fermé
 			if ( isExpanded ) {
-				header.setAttribute( 'aria-expanded', 'false' );
+				toggle.setAttribute( 'aria-expanded', 'false' );
 				body.style.display = 'none';
 				if ( icon ) {
 					icon.textContent = '▶';
 				}
 			} else {
-				header.setAttribute( 'aria-expanded', 'true' );
+				toggle.setAttribute( 'aria-expanded', 'true' );
 				body.style.display = '';
 				if ( icon ) {
 					icon.textContent = '▼';
@@ -175,7 +164,7 @@
 				return; //On en fait rien
 			}
 			const row     = event.target.closest( '.chtw-accordion' ); //On utilise .closest() pour cibler l'accordéon dans lequel le clic a eu lieu
-			const display = row.querySelector( '.chtw-block-title-display' ); //On met l'élément <h3> (title display) dans une variable
+			const display = row.querySelector( '.chtw-block-title-display' ); //On met l'élément <span> qui affiche le titre dans l'en-tête dans une variable
 			if ( ! display ) { //Si l'élément n'existe pas
 				return;
 			}
@@ -308,12 +297,18 @@
 			newRow.setAttribute( 'data-block-id', tempId );
 
 			// Le nouveau bloc apparaît déjà déplié, contrairement aux blocs existants (repliés par défaut) : l'utilisateur vient de cliquer sur "Ajouter", il s'apprête donc à le remplir immédiatement.
-			const header = newRow.querySelector( '.chtw-accordion-header' );
+			const toggle = newRow.querySelector( '.chtw-accordion-toggle' );
 			const body   = newRow.querySelector( '.chtw-accordion-body' );
-			if ( header && body ) { //On vérifier que header et body ne sont pas null
-				header.setAttribute( 'aria-expanded', 'true' ); //On ajoute l'attribut aria-expanded
+			if ( toggle && body ) { //On vérifie que toggle et body ne sont pas null
+				// L'id du corps et l'aria-controls du bouton portent encore le placeholder '__INDEX__'
+				// hérité du template : on les réaligne sur l'index réel, sinon tous les blocs ajoutés
+				// dans la même session partageraient le même id HTML.
+				body.id = 'chtw-accordion-body-' + fieldIndex;
+				toggle.setAttribute( 'aria-controls', body.id );
+
+				toggle.setAttribute( 'aria-expanded', 'true' ); //On signale que l'accordéon est déplié
 				body.style.display = ''; //On affiche le corps du bloc
-				const icon = header.querySelector( '.chtw-accordion-toggle-icon' ); //On met la bonne icone qui indique que l'accordéon est déplié
+				const icon = toggle.querySelector( '.chtw-accordion-toggle-icon' ); //On met la bonne icone qui indique que l'accordéon est déplié
 				if ( icon ) {
 					icon.textContent = '▼';
 				}
