@@ -42,11 +42,11 @@ function chtw_enqueue_code_editor( $hook_suffix ) {
 
 		'chtw-code-editor-init',
 
-		plugin_dir_url( __DIR__ ) . 'assets/js/code-editor-init.js', // Notre fichier d'initiation de l'éditeur de code
+		CHTW_PLUGIN_URL . 'assets/js/code-editor-init.js', // Notre fichier d'initiation de l'éditeur de code
 
 		array( 'code-editor', 'chtw-field-repeater' ), // les dépendances - On a besoin de chtw-field-repeater parce que c'est ce script qui génère l'événement chtw:block-added
 
-		filemtime( plugin_dir_path( __DIR__ ) . 'assets/js/code-editor-init.js' ), //cache busting
+		filemtime( CHTW_PLUGIN_PATH . 'assets/js/code-editor-init.js' ), //cache busting
 
 		true //On charge en pied de page
 
