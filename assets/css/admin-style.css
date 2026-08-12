@@ -115,14 +115,21 @@
  * ------------------------------------------------------------------ */
 
 /* Retour visuel après un déplacement de bloc (cf handler des boutons Monter/Descendre dans
-   field-repeater.js). Le fond revient à transparent, et non à la couleur de l'en-tête : la
-   propriété n'est posée que le temps de l'animation, l'élément retrouve ensuite son style normal. */
+   field-repeater.js).
+   
+   L'animation cible l'EN-TÊTE et non le bloc entier : c'est la seule partie visible quand un bloc
+   est replié, et c'est précisément dans cet état que le déplacement passe inaperçu. Posée sur
+   .chtw-accordion, elle serait masquée par le fond opaque de l'en-tête et ne transparaîtrait que
+   sur le corps — donc uniquement sur les blocs déjà dépliés, là où le repère est le moins utile.
+   
+   Le keyframe ne déclare que 'from' : sans 'to', le navigateur utilise la valeur de base de
+   l'élément comme point d'arrivée, ici le #f6f7f7 de .chtw-accordion-header. Ça évite de dupliquer
+   cette couleur, et donc de la désynchroniser le jour où l'en-tête change de teinte. */
 @keyframes chtw-flash {
 	from { background-color: #f0f6fc; } /* bleu clair de la palette d'administration WordPress */
-	to   { background-color: transparent; }
 }
 
-.chtw-block-moved {
+.chtw-block-moved .chtw-accordion-header {
 	animation: chtw-flash 0.8s ease-out;
 }
 
