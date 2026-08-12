@@ -239,18 +239,20 @@ function chtw_render_settings_page() {
 
 			<div id="chtw-blocks-list">
 				<?php
-				if ( empty( $blocks ) ) {
-					echo '<p class="chtw-no-blocks">' . esc_html__( 'Aucun bloc pour le moment. Cliquez sur "Ajouter un bloc" pour commencer.', 'chtw' ) . '</p>';
-				} else {
-					// Index recalculé ici plutôt que réutilisé depuis les clés de $blocks : on
-					// garantit une numérotation contiguë à partir de 0, quelle que soit la forme
-					// du tableau lu en base (import manuel, réindexation partielle...).
-					$row_index = 0;
+				// Le message est TOUJOURS rendu, simplement masqué quand des blocs existent : c'est
+				// field-repeater.js qui bascule sa visibilité (cf refreshEmptyState()). Le retirer
+				// du HTML rendrait impossible son réaffichage après suppression du dernier bloc,
+				// sauf à dupliquer la chaîne traduite côté JS.
+				echo '<p class="chtw-no-blocks"' . ( empty( $blocks ) ? '' : ' hidden' ) . '>' . esc_html__( 'Aucun bloc pour le moment. Cliquez sur "Ajouter un bloc" pour commencer.', 'chtw' ) . '</p>';
 
-					foreach ( $blocks as $block ) {
-						echo chtw_render_block_row( $block, $row_index );
-						$row_index++;
-					}
+				// Index recalculé ici plutôt que réutilisé depuis les clés de $blocks : on
+				// garantit une numérotation contiguë à partir de 0, quelle que soit la forme
+				// du tableau lu en base (import manuel, réindexation partielle...).
+				$row_index = 0;
+
+				foreach ( $blocks as $block ) {
+					echo chtw_render_block_row( $block, $row_index );
+					$row_index++;
 				}
 				?>
 			</div>
