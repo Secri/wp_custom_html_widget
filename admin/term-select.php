@@ -22,8 +22,6 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit; // sécurité : pas d'accès direct au fichier
 
-define( 'CHTW_TERM_SEARCH_PER_PAGE', 20 ); //Nombre de termes RETOURNÉS par page de résultats AJAX. Correspond à la pagination native de Select2 (scroll infini au-delà de ce nombre). Attention : ce n'est pas la valeur passée telle quelle à get_terms(), qui en demande une de plus pour détecter l'existence d'une page suivante (cf chtw_handle_term_search_request()).
-
 add_action( 'admin_enqueue_scripts', 'chtw_enqueue_term_select' );
 add_action( 'wp_ajax_chtw_search_terms', 'chtw_handle_term_search_request' ); //Sera déclenché par admin-ajax.php lorsqu'un fichier JS enverra le paramètre action chtw_search_terms
 
@@ -101,7 +99,6 @@ function chtw_handle_term_search_request() {
 	$args = array( //Construction des arguments de recherche
 		'taxonomy'   => $taxonomy,
 		'hide_empty' => false, // un terme peut être choisi comme cible même s'il n'a encore aucun contenu associé
-		
 		// On demande volontairement UN terme de plus que la taille de page : sa présence (ou son
 		// absence) dans le résultat suffit à renseigner pagination.more, dont le scroll infini de
 		// Select2 n'a besoin que comme booléen. Ce terme excédentaire est retiré avant l'envoi de
