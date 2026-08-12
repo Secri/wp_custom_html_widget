@@ -4,9 +4,14 @@
  * Plugin URI: https://github.com/Secri/wp_custom_html_widget/
  * Description: Création de blocs HTML personnalisés injectables par taxonomies dans les zones de widgets
  * Version: 0.1.0
+ * Requires at least: 5.8
+ * Requires PHP: 7.4
  * Author: Christophe IENZER
  * Author URI: https://www.linkedin.com/in/christophe-ienzer
+ * License: GPL-2.0-or-later
+ * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: chtw
+ * Update URI: false
  */
 
 if ( ! defined( 'ABSPATH' ) ) exit; // sécurité : pas d'accès direct au fichier
