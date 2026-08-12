@@ -433,21 +433,11 @@ function chtw_strip_inline_scripts( $html ) {
 }
 
 /* ------------------------------------------------------------------------
- * 4. Lecture des données (fonctions utilitaires réutilisables partout)
- * ---------------------------------------------------------------------- */
-
-/**
- * Retourne le tableau complet des blocs enregistrés
+ * 4. Génération des identifiants de blocs (chemin d'écriture, admin uniquement)
  *
- * @return array
- */
-function chtw_get_blocks() {
-
-	$blocks = get_option( 'chtw_blocks', array() );
-
-	return is_array( $blocks ) ? $blocks : array();
-
-}
+ * La lecture des blocs, elle, vit dans includes/data.php : elle est partagée avec le front
+ * (cf includes/front-rendering.php) et doit donc rester chargée hors du contexte admin.
+ * ---------------------------------------------------------------------- */
 
 /**
  * Retourne le prochain compteur disponible pour générer un nouvel id de bloc.
