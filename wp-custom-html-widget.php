@@ -12,6 +12,23 @@
 if ( ! defined( 'ABSPATH' ) ) exit; // sécurité : pas d'accès direct au fichier
 
 /* ------------------------------------------------------------------------
+ * Chemins du plugin
+ *
+ * Calculés une seule fois, ici, à partir de __FILE__ — le seul repère fiable, puisque ce fichier
+ * ne bougera jamais de la racine du plugin. Les fichiers de admin/ utilisaient auparavant
+ * plugin_dir_url( __DIR__ ) et plugin_dir_path( __DIR__ ), qui remontent d'un niveau depuis leur
+ * propre emplacement : correct tant qu'ils restent dans un sous-dossier de premier niveau, mais
+ * silencieusement faux dès qu'un fichier change de profondeur (admin/partials/, includes/admin/...).
+ * L'erreur ne serait pas détectée au chargement — juste des assets en 404.
+ *
+ * Les deux fonctions WordPress retournent un slash final : les chemins relatifs se concatènent
+ * donc directement, sans séparateur.
+ * ---------------------------------------------------------------------- */
+
+define( 'CHTW_PLUGIN_PATH', plugin_dir_path( __FILE__ ) ); // chemin serveur, pour require_once et filemtime()
+define( 'CHTW_PLUGIN_URL', plugin_dir_url( __FILE__ ) );   // URL publique, pour wp_enqueue_script() et wp_enqueue_style()
+
+/* ------------------------------------------------------------------------
  * Constantes de configuration
  *
  * Toutes rassemblées ici, quel que soit le fichier qui les consomme. Auparavant réparties entre
@@ -76,9 +93,9 @@ define( 'CHTW_TERM_SEARCH_PER_PAGE', 20 );
  * front pour l'affichage, mais aussi dans l'administration pour l'écran des widgets.
  * ---------------------------------------------------------------------- */
 
-require_once plugin_dir_path( __FILE__ ) . 'includes/data.php';
-require_once plugin_dir_path( __FILE__ ) . 'includes/taxonomy-matcher.php';
-require_once plugin_dir_path( __FILE__ ) . 'includes/front-rendering.php';
+require_once CHTW_PLUGIN_PATH . 'includes/data.php';
+require_once CHTW_PLUGIN_PATH . 'includes/taxonomy-matcher.php';
+require_once CHTW_PLUGIN_PATH . 'includes/front-rendering.php';
 
 /* ------------------------------------------------------------------------
  * Fichiers admin/ (back-office uniquement)
@@ -101,11 +118,11 @@ require_once plugin_dir_path( __FILE__ ) . 'includes/front-rendering.php';
 
 if ( is_admin() ) {
 
-	require_once plugin_dir_path( __FILE__ ) . 'admin/admin-menu.php';
-	require_once plugin_dir_path( __FILE__ ) . 'admin/settings.php';
-	require_once plugin_dir_path( __FILE__ ) . 'admin/settings-page-template.php';
-	require_once plugin_dir_path( __FILE__ ) . 'admin/enqueue.php';
-	require_once plugin_dir_path( __FILE__ ) . 'admin/code-editor.php';
-	require_once plugin_dir_path( __FILE__ ) . 'admin/term-select.php';
+	require_once CHTW_PLUGIN_PATH . 'admin/admin-menu.php';
+	require_once CHTW_PLUGIN_PATH . 'admin/settings.php';
+	require_once CHTW_PLUGIN_PATH . 'admin/settings-page-template.php';
+	require_once CHTW_PLUGIN_PATH . 'admin/enqueue.php';
+	require_once CHTW_PLUGIN_PATH . 'admin/code-editor.php';
+	require_once CHTW_PLUGIN_PATH . 'admin/term-select.php';
 
 }
