@@ -110,15 +110,23 @@ function chtw_register_settings() {
 		)
 	);
 
-	register_setting(
-		'chtw_settings_group',
-		'chtw_next_id', // compteur indépendant à stocker à part dans la base de données ! Sert pour la logique d'unicité de l'incrément
-		array(
-			'type'              => 'integer',
-			'sanitize_callback' => 'absint',
-			'default'           => 1,
-		)
-	);
+	/* 'chtw_next_id' n'est VOLONTAIREMENT PAS enregistré dans le groupe 'chtw_settings_group'.
+	 *
+	 * options.php boucle sur toutes les options d'un groupe et appelle update_option() pour chacune,
+	 * y compris celles absentes de $_POST — auquel cas la valeur transmise est null :
+	 *
+	 *     $value = null;
+	 *     if ( isset( $_POST[ $option ] ) ) { ... }
+	 *     update_option( $option, $value );
+	 *
+	 * Or ce compteur n'a aucun champ correspondant dans le formulaire (il est piloté exclusivement
+	 * côté serveur par chtw_create_new_block()). L'enregistrer ici revenait donc à le remettre à 0
+	 * à chaque sauvegarde (absint( null ) === 0), et à faire produire l'id 'widget_0' à tous les
+	 * blocs suivants — donc des id en collision.
+	 *
+	 * Le compteur est persisté directement via update_option() dans chtw_create_new_block() :
+	 * il n'a pas besoin de la Settings API, qui ne sert qu'aux options pilotées par un formulaire.
+	 */
 }
 
 /* ------------------------------------------------------------------------
@@ -308,13 +316,37 @@ function chtw_get_blocks() {
 }
 
 /**
- * Retourne le prochain compteur disponible pour générer un nouvel id de bloc
+ * Retourne le prochain compteur disponible pour générer un nouvel id de bloc.
+ *
+ * La valeur retournée est le maximum entre :
+ * - 1 (plancher : 'widget_0' n'est jamais un id valide) ;
+ * - le compteur stocké en base ;
+ * - le plus grand suffixe déjà utilisé par un bloc existant, + 1.
+ *
+ * Ce troisième terme est un garde-fou d'auto-réparation : si le compteur a été corrompu
+ * (remis à 0 par une version antérieure du plugin, restauration partielle de base de données,
+ * import manuel de l'option 'chtw_blocks' sans 'chtw_next_id'...), on ne peut plus jamais
+ * régénérer un id déjà attribué. Le coût est nul en pratique : chtw_get_blocks() lit une
+ * option déjà mise en cache par WordPress, et la boucle ne dépasse jamais CHTW_MAX_BLOCKS.
  *
  * @return int
  */
 function chtw_get_next_id() {
 
-	return absint( get_option( 'chtw_next_id', 1 ) );
+	$stored_counter = absint( get_option( 'chtw_next_id', 1 ) );
+
+	$highest_used = 0;
+
+	foreach ( chtw_get_blocks() as $block ) {
+
+		if ( ! is_array( $block ) || ! isset( $block['id'] ) || 0 !== strpos( $block['id'], 'widget_' ) ) {
+			continue; // bloc malformé ou id hors format : ne peut pas entrer en collision
+		}
+
+		$highest_used = max( $highest_used, absint( substr( $block['id'], strlen( 'widget_' ) ) ) );
+	}
+
+	return max( 1, $stored_counter, $highest_used + 1 );
 
 }
 
