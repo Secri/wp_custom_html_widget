@@ -38,24 +38,24 @@ function chtw_enqueue_term_select( $hook_suffix ) {
 
 	wp_enqueue_style(
 		'chtw-select2',
-		plugin_dir_url( __DIR__ ) . 'assets/vendor/select2/css/select2.min.css', //Librairie CSS Select2
+		CHTW_PLUGIN_URL . 'assets/vendor/select2/css/select2.min.css', //Librairie CSS Select2
 		array(),
-		filemtime( plugin_dir_path( __DIR__ ) . 'assets/vendor/select2/css/select2.min.css' ) //cache busting
+		filemtime( CHTW_PLUGIN_PATH . 'assets/vendor/select2/css/select2.min.css' ) //cache busting
 	);
 
 	wp_enqueue_script(
 		'chtw-select2',
-		plugin_dir_url( __DIR__ ) . 'assets/vendor/select2/js/select2.min.js', //Librairie JS Select2
+		CHTW_PLUGIN_URL . 'assets/vendor/select2/js/select2.min.js', //Librairie JS Select2
 		array( 'jquery' ), // Select2 dépend de jQuery
-		filemtime( plugin_dir_path( __DIR__ ) . 'assets/vendor/select2/js/select2.min.js' ), //cache busting
+		filemtime( CHTW_PLUGIN_PATH . 'assets/vendor/select2/js/select2.min.js' ), //cache busting
 		true
 	);
 
 	wp_enqueue_script(
 		'chtw-term-select-init',
-		plugin_dir_url( __DIR__ ) . 'assets/js/term-select-init.js',
+		CHTW_PLUGIN_URL . 'assets/js/term-select-init.js',
 		array( 'jquery', 'chtw-select2', 'chtw-field-repeater' ), // dépend de Select2 et de l'événement 'chtw:block-added'
-		filemtime( plugin_dir_path( __DIR__ ) . 'assets/js/term-select-init.js' ),
+		filemtime( CHTW_PLUGIN_PATH . 'assets/js/term-select-init.js' ),
 		true
 	);
 
