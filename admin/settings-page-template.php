@@ -166,6 +166,16 @@ function chtw_render_block_row( array $block, $index ) {
 						rows="10"
 					><?php echo esc_textarea( $html ); ?></textarea>
 				</label>
+
+				<p class="description chtw-html-editor-notice">
+					<?php esc_html_e( 'Les scripts externes et les balises <style> sont acceptés : vous pouvez coller tel quel le code d\'intégration fourni par LinkedIn, YouTube, X, Instagram, TikTok, Facebook...', 'chtw' ); ?>
+					<br />
+					<strong><?php esc_html_e( 'Le JavaScript écrit directement entre deux balises <script> est supprimé à l\'enregistrement.', 'chtw' ); ?></strong>
+					<?php esc_html_e( 'Seuls les scripts chargés depuis une adresse externe (attribut src) sont conservés — c\'est le cas de tous les codes d\'intégration des réseaux sociaux.', 'chtw' ); ?>
+					<br />
+					<?php esc_html_e( 'Si vous ajoutez du CSS, limitez vos règles à ce bloc pour ne pas affecter le reste du site :', 'chtw' ); ?>
+					<code><?php echo esc_html( '.chtw-widget[data-chtw-block-id="' . ( 0 === strpos( $id, 'widget_' ) ? $id : 'votre-identifiant-de-bloc' ) . '"] { ... }' ); //Sélecteur réel dès que le bloc est enregistré, générique tant qu'il ne l'est pas (template et blocs non sauvegardés) ?></code>
+				</p>
 			</div>
 
 		</div>
