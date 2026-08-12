@@ -109,7 +109,7 @@ function chtw_assign_pending_block_ids() {
 		$raw_id = sanitize_key( $raw_block['id'] ); // On sanitize l'id
 
 		if ( 0 === strpos( $raw_id, 'new_' ) ) { // Si cet id est un id temporaire (qui commence par new_ = attribué en JS)
-			$new_block = chtw_create_new_block(); // On crée un nouveau bloc avec un ID définitif
+			$new_block                            = chtw_create_new_block(); // On crée un nouveau bloc avec un ID définitif
 			/* ATTENTION — modification directe de $_POST['chtw_blocks']
 			* ce n'est PAS un contournement de la sanitization, ni une faille : $_POST n'est ici que le vecteur de transport entre cette fonction et le
 			* sanitize_callback natif de WordPress (chtw_sanitize_blocks(), invoqué plus tard par options.php).
@@ -302,30 +302,64 @@ function chtw_sanitize_html_block( $html ) {
 
 	$allowed_html = wp_kses_allowed_html( 'post' );
 
+	// Les entrées ci-dessous REMPLACENT celles du jeu 'post' et ne passent donc pas par
+	// _wp_add_global_attributes() : les attributs globaux (id, class, style, data-*) doivent y être
+	// répétés explicitement, contrairement aux balises héritées telles quelles (blockquote, div, p, a...).
 	$allowed_html['script'] = array(
-		'src'         => true,
-		'async'       => true,
-		'defer'       => true,
-		'type'        => true,
-		'charset'     => true,
-		'crossorigin' => true,
+		'src'            => true,
+		'async'          => true,
+		'defer'          => true,
+		'type'           => true,
+		'charset'        => true,
+		'crossorigin'    => true,
+		'integrity'      => true, // Subresource Integrity
+		'referrerpolicy' => true,
+		'id'             => true,
+		'class'          => true,
+		'data-*'         => true, // certains loaders tiers se configurent par attributs data-
 	);
 
-	// Pour les <iframe> on s'assure que les attributs dangereux ne sont pas acceptés. Les 10 attributs choisis permettent les embed type Linkedin, Youtube...
+	// Les 15 attributs retenus couvrent les embeds iframe courants (LinkedIn, YouTube, Google Maps,
+	// Spotify, SoundCloud, Mastodon) sans ouvrir d'attribut permettant l'exécution de code.
 	$allowed_html['iframe'] = array(
-		'src'             => true,
-		'width'           => true,
-		'height'          => true,
-		'frameborder'     => true,
-		'allow'           => true,
-		'allowfullscreen' => true,
-		'loading'         => true,
-		'title'           => true,
-		'sandbox'         => true,
-		'referrerpolicy'  => true,
+		'src'               => true,
+		'width'             => true,
+		'height'            => true,
+		'frameborder'       => true,
+		'allow'             => true,
+		'allowfullscreen'   => true,
+		'allowtransparency' => true, // Facebook, anciens lecteurs audio
+		'scrolling'         => true, // SoundCloud, Spotify
+		'loading'           => true,
+		'title'             => true,
+		'name'              => true,
+		'sandbox'           => true,
+		'referrerpolicy'    => true,
+		'id'                => true,
+		'class'             => true,
+		'style'             => true,
+		'data-*'            => true,
 	);
 
-	return wp_kses( $html, $allowed_html );
+	$allowed_html['style'] = array(
+		'type'  => true,
+		'media' => true,
+	);
+
+	return wp_kses( chtw_strip_inline_scripts( $html ), $allowed_html );
+}
+
+/**
+ * Retire les balises <script> dépourvues d'attribut src, contenu compris.
+ *
+ * @param string $html
+ * @return string
+ */
+function chtw_strip_inline_scripts( $html ) {
+
+	$stripped = preg_replace( '#<script\b(?![^>]*\bsrc\s*=)[^>]*>.*?</script>#is', '', $html );
+
+	return is_string( $stripped ) ? $stripped : $html; // preg_replace() retourne null en cas d'échec (dépassement de pcre.backtrack_limit sur un contenu très volumineux)
 }
 
 /* ------------------------------------------------------------------------
