@@ -17,44 +17,19 @@ if ( ! defined( 'ABSPATH' ) ) exit; // sécurité : pas d'accès direct au fichi
  * ---------------------------------------------------------------------- */
 
 /**
- * Fonction qui génère le HTML d'une ligne de bloc du repeater.
+ * Fonction qui retourne les identifiants des zones de widgets contenant au moins une instance du widget.
  *
- * Appelée :
- * - en boucle, une fois par bloc existant (chtw_get_blocks())
- * - une fois de plus avec un bloc vide, pour fournir le <template> caché que field-repeater.js clone à chaque ajout de bloc.
+ * Sert à signaler, dans le sélecteur de zone, celles où aucun widget n'est placé : un bloc peut y être ciblé sans jamais s'afficher, faute de widget pour le rendre.
  *
- * @param array $block {
- *     @type string $id       Identifiant du bloc ('widget_N' ou 'new_...' ou '' pour le template).
- *     @type string $html     Code HTML du bloc (déjà sanitizé si lu depuis la base).
- *     @type string $taxonomy Slug de la taxonomie de ciblage.
- *     @type array  $term_ids Liste de term_id ciblés.
- *     @type string $title    Titre optionnel du bloc.
- *     @type string $sidebar  Identifiant de la zone de widgets dans laquelle le bloc s'affiche.
- * }
- * @param int|string $index Index de la ligne dans le tableau chtw_blocks soumis. Entier pour un
- *                          bloc existant, chaîne '__INDEX__' pour le template caché : field-repeater.js
- *                          y substitue un index réel au moment du clonage.
- * @return string HTML de la ligne.
- */
-/**
- * Retourne les identifiants des zones de widgets contenant au moins une instance du widget du plugin.
+ * Les instances de widgets sont identifiées par des clés de la forme '{id_base}-{numéro}', soit ici 'chtw_widget-3' (cf CHTW_Widget::__construct() dans includes/front-rendering.php).
  *
- * Sert à signaler, dans le sélecteur de zone, celles où aucun widget n'est placé : un bloc peut y être
- * ciblé sans jamais s'afficher, faute de widget pour le rendre. C'est le mode d'échec le moins
- * intuitif de ce plugin — configuration parfaite, résultat invisible — d'où le repérage à la source,
- * au moment même du choix.
- *
- * Les instances de widgets sont identifiées par des clés de la forme '{id_base}-{numéro}', soit ici
- * 'chtw_widget-3' (cf CHTW_Widget::__construct() dans includes/front-rendering.php).
- *
- * Note : wp_get_sidebars_widgets() est marquée @access private dans le cœur de WordPress. Elle est
- * stable depuis la version 2.2 et universellement utilisée, mais ce n'est pas une API contractuelle.
+ * Note : wp_get_sidebars_widgets() est marquée en @access private dans le cœur de WordPress. Elle est stable depuis la version 2.2 et universellement utilisée, mais ce n'est pas une API contractuelle.
  *
  * Mémorisée en statique : appelée une fois par bloc affiché, elle interrogerait sinon la même option
  * à chaque ligne du formulaire.
  *
  * @return array Identifiants de zones en clés, true en valeurs.
- */
+ **/
 function chtw_get_sidebars_containing_widget() {
 
 	static $sidebars_with_widget = null;
@@ -64,6 +39,10 @@ function chtw_get_sidebars_containing_widget() {
 	}
 
 	$sidebars_with_widget = array();
+
+	if ( ! function_exists( 'wp_get_sidebars_widgets' ) ) { //Mécanisme défensif, comme l'équipe Wordpress précise que cette fonction est private, on retourne un tableau vide directement pour éviter une éventuelle erreur fatale
+    	return $sidebars_with_widget;
+	}
 
 	foreach ( wp_get_sidebars_widgets() as $sidebar_id => $widget_ids ) {
 
@@ -83,6 +62,21 @@ function chtw_get_sidebars_containing_widget() {
 
 }
 
+/**
+ * Fonction qui génère le HTML d'une ligne de bloc du repeater.
+ *
+ * @param array $block {
+ *     @type string $id       Identifiant du bloc ('widget_N' ou 'new_...' ou '' pour le template).
+ *     @type string $html     Code HTML du bloc (déjà sanitizé si lu depuis la base).
+ *     @type string $taxonomy Slug de la taxonomie de ciblage.
+ *     @type array  $term_ids Liste de term_id ciblés.
+ *     @type string $title    Titre optionnel du bloc.
+ *     @type string $sidebar  Identifiant de la zone de widgets dans laquelle le bloc s'affiche.
+ * }
+ * @param int|string $index Index de la ligne dans le tableau chtw_blocks soumis. Entier pour un bloc existant, chaîne '__INDEX__' pour le template caché => field-repeater.js y substitue un index réel au moment du clonage.
+ * @return string HTML de la ligne.
+ *
+ **/
 function chtw_render_block_row( array $block, $index ) {
 
 	$id               = isset( $block['id'] ) ? $block['id'] : '';
