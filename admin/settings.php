@@ -51,7 +51,7 @@ function chtw_assign_pending_block_ids() {
 		return; // On ne fait rien
 	}
 
-	if ( ! current_user_can( 'manage_options' ) ) { // Même capability que add_options_page() et que le contrôle en tête de chtw_render_settings_page()
+	if ( ! current_user_can( 'manage_options' ) ) { // Même capability que add_menu_page() et que le contrôle en tête de chtw_render_settings_page()
 		return; // On ne fait rien
 	}
 
