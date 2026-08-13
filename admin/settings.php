@@ -254,6 +254,16 @@ function chtw_sanitize_blocks_uncached( $raw_blocks ) {
 			$term_ids = array_values( array_filter( array_map( 'absint', $raw_block['term_ids'] ) ) ); //S'assure que les id sont int positifs, supprime les 0, réassigne les index du tableau
 		}
 
+		// Zone de widgets ciblée. sanitize_text_field() et NON sanitize_key() : cette dernière force la
+		// casse en minuscules, or un identifiant de zone est libre — register_sidebar() n'impose rien
+		// et un thème peut déclarer 'Sidebar_Main'. La transformation ferait échouer la comparaison
+		// avec $args['id'] au rendu, et le bloc ne s'afficherait jamais, sans le moindre message.
+		//
+		// Volontairement PAS de validation contre $GLOBALS['wp_registered_sidebars'] : certains thèmes
+		// et extensions déclarent des zones conditionnellement, un ciblage légitime serait effacé.
+		// On stocke le choix tel quel, la comparaison a lieu au rendu.
+		$sidebar = isset( $raw_block['sidebar'] ) ? sanitize_text_field( $raw_block['sidebar'] ) : '';
+
 		$include_children = ! empty( $raw_block['include_children'] ); // Inclusion des taxonomies enfants : Checkbox HTML classique - présente dans $_POST seulement si cochée
 
 		// Troncature APRÈS sanitize_text_field() : on nettoie d'abord les caractères indésirables, puis on
@@ -282,10 +292,11 @@ function chtw_sanitize_blocks_uncached( $raw_blocks ) {
 			'term_ids'         => $term_ids,
 			'include_children' => $include_children,
 			'title'            => $title,
+			'sidebar'          => $sidebar,
 		);
 
-		// Mécanisme de fail-safe : un bloc sans taxonomie ou sans terme ciblé est enregistré tel quel. La fonction chtw_block_matches_post() dans taxonomy-matcher.php ne l'affichera alors sur aucune page. On le signalera néanmoins explicitement pour que l'admin ne soit pas surpris de ne pas le voir apparaître sur le site.
-		if ( '' === $taxonomy || empty( $term_ids ) ) {
+		// Mécanisme de fail-safe : un bloc sans taxonomie, sans terme ciblé ou sans zone de widgets est enregistré tel quel. La fonction chtw_block_matches_post() dans taxonomy-matcher.php ne l'affichera alors sur aucune page. On le signalera néanmoins explicitement pour que l'admin ne soit pas surpris de ne pas le voir apparaître sur le site.
+		if ( '' === $taxonomy || empty( $term_ids ) || '' === $sidebar ) {
 			$incomplete_labels[] = '' !== $title ? $title : $id; //Pour l'indication on utilise le titre du bloc s'il existe, sinon on prend son id qui existe toujours à ce moment là
 		}
 	}
