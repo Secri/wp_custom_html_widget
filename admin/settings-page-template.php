@@ -6,7 +6,7 @@
  * - Affiche les erreurs/succès de sauvegarde via settings_errors()
  * - Affiche le <form> Settings API complet
  * - Boucle sur les blocs existants (chtw_get_blocks()) pour les afficher
- * - Fournit un template caché (une ligne de bloc vide) que field-repeater.js clone à chaque clic sur "Ajouter un bloc" (champ répétable)
+ * - Fournit un template caché que field-repeater.js clone à chaque clic sur "Ajouter un bloc" (champ répétable)
  *
  */
 
