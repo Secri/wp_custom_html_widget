@@ -29,12 +29,60 @@ if ( ! defined( 'ABSPATH' ) ) exit; // sécurité : pas d'accès direct au fichi
  *     @type string $taxonomy Slug de la taxonomie de ciblage.
  *     @type array  $term_ids Liste de term_id ciblés.
  *     @type string $title    Titre optionnel du bloc.
+ *     @type string $sidebar  Identifiant de la zone de widgets dans laquelle le bloc s'affiche.
  * }
  * @param int|string $index Index de la ligne dans le tableau chtw_blocks soumis. Entier pour un
  *                          bloc existant, chaîne '__INDEX__' pour le template caché : field-repeater.js
  *                          y substitue un index réel au moment du clonage.
  * @return string HTML de la ligne.
  */
+/**
+ * Retourne les identifiants des zones de widgets contenant au moins une instance du widget du plugin.
+ *
+ * Sert à signaler, dans le sélecteur de zone, celles où aucun widget n'est placé : un bloc peut y être
+ * ciblé sans jamais s'afficher, faute de widget pour le rendre. C'est le mode d'échec le moins
+ * intuitif de ce plugin — configuration parfaite, résultat invisible — d'où le repérage à la source,
+ * au moment même du choix.
+ *
+ * Les instances de widgets sont identifiées par des clés de la forme '{id_base}-{numéro}', soit ici
+ * 'chtw_widget-3' (cf CHTW_Widget::__construct() dans includes/front-rendering.php).
+ *
+ * Note : wp_get_sidebars_widgets() est marquée @access private dans le cœur de WordPress. Elle est
+ * stable depuis la version 2.2 et universellement utilisée, mais ce n'est pas une API contractuelle.
+ *
+ * Mémorisée en statique : appelée une fois par bloc affiché, elle interrogerait sinon la même option
+ * à chaque ligne du formulaire.
+ *
+ * @return array Identifiants de zones en clés, true en valeurs.
+ */
+function chtw_get_sidebars_containing_widget() {
+
+	static $sidebars_with_widget = null;
+
+	if ( null !== $sidebars_with_widget ) {
+		return $sidebars_with_widget;
+	}
+
+	$sidebars_with_widget = array();
+
+	foreach ( wp_get_sidebars_widgets() as $sidebar_id => $widget_ids ) {
+
+		if ( 'wp_inactive_widgets' === $sidebar_id || ! is_array( $widget_ids ) ) {
+			continue; // zone des widgets inactifs : rien n'y est rendu côté front
+		}
+
+		foreach ( $widget_ids as $widget_id ) {
+			if ( 0 === strpos( $widget_id, 'chtw_widget-' ) ) {
+				$sidebars_with_widget[ $sidebar_id ] = true;
+				break; // une instance suffit, inutile de parcourir le reste de la zone
+			}
+		}
+	}
+
+	return $sidebars_with_widget;
+
+}
+
 function chtw_render_block_row( array $block, $index ) {
 
 	$id               = isset( $block['id'] ) ? $block['id'] : '';
@@ -43,6 +91,7 @@ function chtw_render_block_row( array $block, $index ) {
 	$term_ids         = isset( $block['term_ids'] ) && is_array( $block['term_ids'] ) ? $block['term_ids'] : array();
 	$include_children = ! empty( $block['include_children'] ); //Tricky : Doit pouvoir gérer les blocs en bdd et les blocs vides - case cochée => empty(...) = false => ! empty(...) = true => case cochée | case décochée => empty(...) = true => ! empty(...) = false => case décochée | valeur absente => empty(...) = true => ! empty(...) = false => case décochée
 	$title            = isset( $block['title'] ) ? $block['title'] : '';
+	$sidebar          = isset( $block['sidebar'] ) ? $block['sidebar'] : '';
 
 	// Préfixe de name= utilisé pour tous les champs de cette ligne.
 	//
@@ -71,6 +120,15 @@ function chtw_render_block_row( array $block, $index ) {
 	// plutôt qu'une exclusion nominative de post_format : il couvre de la même façon les taxonomies
 	// tierces enregistrées sur ce modèle, sans avoir à les connaître.
 	$taxonomies = get_taxonomies( array( 'public' => true, 'show_ui' => true ), 'objects' );
+
+	// Zones de widgets déclarées par le thème actif, proposées comme second axe de ciblage.
+	//
+	// $GLOBALS['wp_registered_sidebars'] est le registre alimenté par register_sidebar() ; le cœur de
+	// WordPress n'expose pas d'accesseur pour le lire. Il est peuplé pendant 'widgets_init', donc bien
+	// avant le rendu de cette page.
+	$sidebars = isset( $GLOBALS['wp_registered_sidebars'] ) ? $GLOBALS['wp_registered_sidebars'] : array();
+
+	$sidebars_with_widget = chtw_get_sidebars_containing_widget();
 
 	ob_start(); //Buffer nécessaire car chtw_render_block_row() est aussi utilisé par chtw_render_settings_page()
 	?>
@@ -114,6 +172,49 @@ function chtw_render_block_row( array $block, $index ) {
 			</div>
 
 			<div class="chtw-block-row-targeting">
+
+				<label>
+					<?php esc_html_e( 'Zone de widgets', 'chtw' ); ?>
+					<select class="chtw-sidebar-select" name="<?php echo esc_attr( $name_base ); ?>[sidebar]">
+						<option value=""><?php esc_html_e( '— Choisir une zone —', 'chtw' ); ?></option>
+						<?php foreach ( $sidebars as $sidebar_id => $sidebar_object ) : ?>
+							<option value="<?php echo esc_attr( $sidebar_id ); ?>" <?php selected( $sidebar, $sidebar_id ); ?>>
+								<?php
+								// Mention « Widget absent » sur les zones où aucune instance du widget n'est
+								// placée : un bloc peut y être ciblé sans jamais s'afficher, et rien d'autre
+								// dans l'interface ne le signalerait.
+								echo esc_html(
+									isset( $sidebars_with_widget[ $sidebar_id ] )
+										? $sidebar_object['name']
+										: sprintf(
+											/* translators: %s: nom de la zone de widgets */
+											__( '%s — Widget absent', 'chtw' ),
+											$sidebar_object['name']
+										)
+								);
+								?>
+							</option>
+						<?php endforeach; ?>
+						<?php if ( '' !== $sidebar && ! isset( $sidebars[ $sidebar ] ) ) : ?>
+							<?php
+							/* Zone enregistrée mais absente du thème actif — typiquement après un changement de
+							   thème, les identifiants de zones appartenant au thème. On réinjecte l'option pour
+							   deux raisons : rendre l'anomalie visible, et surtout éviter que le navigateur ne
+							   retombe sur la première option du select, ce qui effacerait le ciblage au prochain
+							   enregistrement sans que personne ne l'ait demandé. */
+							?>
+							<option value="<?php echo esc_attr( $sidebar ); ?>" selected>
+								<?php
+								printf(
+									/* translators: %s: identifiant de la zone de widgets introuvable */
+									esc_html__( '%s — zone introuvable dans ce thème', 'chtw' ),
+									esc_html( $sidebar )
+								);
+								?>
+							</option>
+						<?php endif; ?>
+					</select>
+				</label>
 
 				<label>
 					<?php esc_html_e( 'Taxonomie de ciblage', 'chtw' ); ?>
