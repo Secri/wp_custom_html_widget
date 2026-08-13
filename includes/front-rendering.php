@@ -53,7 +53,7 @@ class CHTW_Widget extends WP_Widget {
 	public function __construct() {
 		$widget_options = array(
 			'classname'   => 'chtw_widget',
-			'description' => __( 'Affiche les blocs HTML personnalisés ciblés par taxonomie, configurés depuis Réglages > Widgets HTML personnalisés.', 'chtw' ),
+			'description' => __( 'Affiche les blocs HTML personnalisés ciblant cette zone. Placez ce widget dans chaque zone susceptible d\'accueillir des blocs : le contenu affiché est déterminé depuis la page Widgets HTML.', 'chtw' ),
 		);
 
 		parent::__construct(
@@ -84,9 +84,24 @@ class CHTW_Widget extends WP_Widget {
 
 		$blocks = chtw_get_blocks();
 
+		// Identifiant de la zone de widgets dans laquelle cette instance s'exécute. WordPress le
+		// transmet via register_sidebar() : c'est lui qui permet à une même instance placée dans
+		// plusieurs zones de n'afficher, dans chacune, que les blocs qui la visent.
+		$current_sidebar = isset( $args['id'] ) ? $args['id'] : '';
+
 		$matching_blocks_html = '';
 
 		foreach ( $blocks as $block ) {
+
+			// Ciblage par zone. Un bloc sans zone renseignée ne s'affiche nulle part : c'est le même
+			// principe de fail-safe que pour la taxonomie et les termes (cf chtw_sanitize_blocks(),
+			// qui enregistre le bloc mais le signale comme incomplet à l'administrateur).
+			//
+			// Conséquence à connaître : les blocs créés AVANT l'introduction de ce champ n'ont pas de
+			// clé 'sidebar' et cessent donc de s'afficher tant qu'une zone ne leur est pas assignée.
+			if ( empty( $block['sidebar'] ) || $block['sidebar'] !== $current_sidebar ) {
+				continue;
+			}
 
 			if ( ! chtw_block_matches_post( $block, $post_id ) ) {
 				continue;
@@ -125,7 +140,7 @@ class CHTW_Widget extends WP_Widget {
 		<p>
 			<?php
 			esc_html_e(
-				'Ce widget affiche automatiquement les blocs HTML configurés depuis Réglages > Widgets HTML personnalisés, selon leur ciblage par taxonomie. Aucun réglage supplémentaire n\'est nécessaire ici.',
+				'Ce widget affiche automatiquement les blocs HTML qui ciblent cette zone, selon leur ciblage par taxonomie. Tout se configure depuis la page Widgets HTML : aucun réglage supplémentaire ici.',
 				'chtw'
 			);
 			?>
