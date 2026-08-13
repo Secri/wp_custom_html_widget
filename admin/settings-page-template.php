@@ -205,7 +205,7 @@ function chtw_render_block_row( array $block, $index ) {
  * ---------------------------------------------------------------------- */
 
 /**
- * Callback d'affichage de la page de settings, référencé par add_options_page() dans admin-menu.php.
+ * Callback d'affichage de la page de settings, référencé par add_menu_page() dans admin-menu.php.
  */
 function chtw_render_settings_page() {
 
@@ -241,7 +241,17 @@ function chtw_render_settings_page() {
 		<h1><?php esc_html_e( 'Widgets HTML personnalisés', 'chtw' ); ?></h1>
 
 		<?php
-			// Affiche les messages enregistrés via add_settings_error()
+			/* Affiche les messages enregistrés via add_settings_error().
+			
+			   Cet appel est INDISPENSABLE et ne doit pas être retiré : WordPress n'affiche
+			   automatiquement les messages de la Settings API que pour les pages placées sous le
+			   menu Réglages. Cette page étant une entrée de premier niveau (cf add_menu_page()
+			   dans admin-menu.php), aucun affichage automatique n'a lieu — le supprimer ferait
+			   disparaître silencieusement tous les messages, y compris la confirmation
+			   d'enregistrement de WordPress.
+			   
+			   Corollaire inverse : si la page revenait un jour sous Réglages, cet appel
+			   provoquerait un affichage EN DOUBLE de chaque message et devrait être retiré. */
 			settings_errors();
 		?>
 		
