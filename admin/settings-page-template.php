@@ -276,7 +276,7 @@ function chtw_render_block_row( array $block, $index ) {
 				</label>
 
 				<p class="description chtw-html-editor-notice">
-					<?php esc_html_e( 'Les scripts externes et les balises <style> sont acceptés : vous pouvez coller tel quel le code d\'intégration fourni par LinkedIn, YouTube, X, Instagram, TikTok, Facebook...', 'chtw' ); ?>
+					<?php esc_html_e( 'Les scripts externes et les balises style sont acceptés : vous pouvez coller tel quel le code d\'intégration fourni par LinkedIn, YouTube, X, Instagram, TikTok, Facebook...', 'chtw' ); ?>
 					<br />
 					<strong><?php esc_html_e( 'Le code JavaScript sera en revanche supprimé à l\'enregistrement, seuls les scripts chargés depuis une adresse externe (attribut src) sont conservés.', 'chtw' ); ?></strong>
 					<br />
