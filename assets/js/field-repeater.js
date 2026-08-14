@@ -13,14 +13,11 @@
 ( function () {
 	'use strict';
 
-	// Compteur local, purement côté client, pour générer des id temporaires
-	// uniques ('new_1', 'new_2'...) sur les blocs fraîchement ajoutés. Ce
-	// compteur repart de zéro à chaque chargement de page : il ne sert qu'à
-	// distinguer les nouveaux blocs ENTRE EUX le temps de la session en cours,
-	// pas à générer l'id définitif ('widget_N'), qui est attribué côté PHP
-	// uniquement à la sauvegarde (cf chtw_sanitize_blocks() dans settings.php).
+	// Compteur local, purement côté client, pour générer des id temporaires uniques ('new_1', 'new_2'...) sur les blocs fraîchement ajoutés. 
+	// Il repart de zéro à chaque chargement de page : il ne sert qu'à distinguer les nouveaux blocs ENTRE EUX le temps de la session en cours.
+	// L'id définitif ('widget_N') est attribué côté PHP uniquement à la sauvegarde (cf chtw_sanitize_blocks() dans settings.php).
 	
-	let newBlockCounter = 0; // on utilise let, cette variable est réassignée à chaque ajout de bloc.
+	let newBlockCounter = 0; // Variable est réassignée à chaque ajout de bloc.
 
 	/**
 	 * Libellés traduits injectés par wp_localize_script() (cf admin/enqueue.php), avec valeurs de repli.
