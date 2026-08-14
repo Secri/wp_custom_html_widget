@@ -133,7 +133,7 @@ function chtw_render_block_row( array $block, $index ) {
 
 		<div class="chtw-accordion-header">
 			<button type="button" class="chtw-accordion-toggle" aria-expanded="false" aria-controls="chtw-accordion-body-<?php echo esc_attr( $index ); ?>">
-				<span class="chtw-accordion-toggle-icon" aria-hidden="true">▶</span> <!-- caractère unicode brut équivalent à &#9654; -->
+				<span class="chtw-accordion-toggle-icon dashicons dashicons-plus" aria-hidden="true"></span>
 				<span class="chtw-block-title-display">
 					<?php echo '' !== $title ? esc_html( $title ) : esc_html__( '(Bloc sans titre)', 'chtw' ); ?>
 				</span>
