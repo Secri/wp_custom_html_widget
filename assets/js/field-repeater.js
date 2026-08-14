@@ -20,35 +20,28 @@
 	let newBlockCounter = 0; // Variable est réassignée à chaque ajout de bloc.
 
 	/**
-	 * Libellés traduits injectés par wp_localize_script() (cf admin/enqueue.php), avec valeurs de repli.
+	 * Libellés (titre par défaut et msg de confirmation) injectés par wp_localize_script() (cf admin/enqueue.php) sous forme d'un tableau chtwReapeaterData en variable globale.
 	 *
-	 * wp_localize_script() imprime un <script> INLINE juste avant la balise du fichier. Le fichier
-	 * peut donc se charger sans que l'objet existe : Content-Security-Policy stricte bloquant
-	 * l'inline, plugin d'optimisation qui déplace les scripts, ou handle désaligné entre l'appel à
-	 * wp_enqueue_script() et celui à wp_localize_script() après un renommage.
+	 * Note : wp_localize_script() imprime un <script> INLINE, celui-ci peut ne pas se charger pour diverses raisons :  
+	 * Content-Security-Policy stricte bloquant l'inline, plugin d'optimisation qui déplace les scripts, problème avec wp_enqueue_script()...
 	 *
-	 * Sans repli, la première lecture de chtwRepeaterData lèverait une ReferenceError (l'identifiant
-	 * n'est pas déclaré, y accéder est une exception et non une valeur undefined) au beau milieu de
-	 * l'initialisation : tous les écouteurs enregistrés à la suite ne le seraient jamais, et l'écran
-	 * se retrouverait à moitié fonctionnel — accordéon opérationnel, mais ni ajout, ni suppression,
-	 * ni réordonnancement.
+	 * Sans repli, la première lecture de chtwRepeaterData lèverait une ReferenceError au beau milieu de l'initialisation : 
+	 * tous les écouteurs enregistrés à la suite ne le seraient jamais, et l'écran se retrouverait à moitié fonctionnel : ni ajout, ni suppression, ni réordonnancement.
 	 *
-	 * Ces deux libellés ne sont que du confort : on dégrade vers le français plutôt que d'interrompre
-	 * le module. La limite de blocs, elle, n'est PAS ici : elle est lue sur data-max-blocks (cf
-	 * getMaxBlocks()), un canal qui ne peut pas échouer indépendamment du fichier JS.
 	 */
-	const repeaterData = window.chtwRepeaterData || {};
+	const repeaterData = window.chtwRepeaterData || {}; // Défensif - repeaterData sera undefined si le script ne trouve pas chtwRepeaterData au lieu de lever une ReferenceError + on substitue un objet vide qui neutralise les erreurs de type sur les propriétés de repeaterData
 
+	// Gestion des labels avec valeurs de repli en dur
 	const labels = {
-		noTitle:       repeaterData.noTitleLabel || '(Bloc sans titre)',
+		noTitle:       repeaterData.noTitleLabel || '(Bloc sans titre)', 
 		confirmRemove: repeaterData.confirmRemoveLabel || 'Supprimer ce bloc ? Cette action est irréversible une fois les modifications enregistrées.',
 	};
 
 	document.addEventListener( 'DOMContentLoaded', () => { //On s'assure que le DOM est bien chargé
 
-		const blocksList = document.getElementById( 'chtw-blocks-list' );
+		const blocksList = document.getElementById( 'chtw-blocks-list' ); // On récupère la liste de tous les blocs existants au chargement - IMPORTANT parce que c'est sur cette liste qu'on va ajouter tous les écouteurs !
 		const addButton  = document.getElementById( 'chtw-add-block' );
-		const template   = document.getElementById( 'chtw-block-template' );
+		const template   = document.getElementById( 'chtw-block-template' ); // On va chercher <template id="chtw-bloc-template"> qu'on utilise pour créer les nouveaux blocs
 
 		if ( ! blocksList || ! addButton || ! template ) {
 			return; // page pas dans l'état attendu, on n'installe aucun handler
