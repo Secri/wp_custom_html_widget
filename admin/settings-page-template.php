@@ -384,15 +384,8 @@ function chtw_render_settings_page() {
 
 		<!--
 			Template caché cloné par field-repeater.js à chaque clic sur "Ajouter un bloc".
-			Bloc vide, rendu avec l'index littéral '__INDEX__' dans tous ses name= : le JS
-			substitue un index réel (unique pour la page en cours) au moment du clonage, sans
-			quoi tous les blocs ajoutés partageraient le même index et s'écraseraient entre eux
-			dans $_POST. Le JS renseigne en plus un id temporaire unique ('new_1', 'new_2'...)
-			dans le champ caché 'chtw-block-id-field' du clone, qui permet de distinguer les
-			nouveaux blocs entre eux jusqu'à la sauvegarde (cf chtw_assign_pending_block_ids()).
-			Ce template n'est jamais soumis tel quel : le <template> HTML natif n'est de toute
-			façon jamais sérialisé par le navigateur tant qu'il n'a pas été cloné en JS — le
-			littéral '__INDEX__' ne peut donc jamais atteindre chtw_sanitize_blocks().
+			Bloc vide, rendu avec le placeholder '__INDEX__' dans tous ses name= : le JS le remplacera par un index réel (unique pour la page en cours) au moment du clonage.
+			Le JS renseigne en plus un id temporaire unique ('new_1', 'new_2'...) dans l'input hidden 'chtw-block-id-field' du clone, cela permet de distinguer les	nouveaux blocs entre eux jusqu'à la sauvegarde (cf chtw_assign_pending_block_ids()).
 		-->
 		<template id="chtw-block-template">
 			<?php
