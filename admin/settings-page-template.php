@@ -335,16 +335,8 @@ function chtw_render_settings_page() {
 
 		<?php
 			/* Affiche les messages enregistrés via add_settings_error().
-			
-			   Cet appel est INDISPENSABLE et ne doit pas être retiré : WordPress n'affiche
-			   automatiquement les messages de la Settings API que pour les pages placées sous le
-			   menu Réglages. Cette page étant une entrée de premier niveau (cf add_menu_page()
-			   dans admin-menu.php), aucun affichage automatique n'a lieu — le supprimer ferait
-			   disparaître silencieusement tous les messages, y compris la confirmation
-			   d'enregistrement de WordPress.
-			   
-			   Corollaire inverse : si la page revenait un jour sous Réglages, cet appel
-			   provoquerait un affichage EN DOUBLE de chaque message et devrait être retiré. */
+			 * Note sur le fonctionnement de Wordpress : si la page devait un jour être intégrée sous Réglages, cet appel provoquerait un affichage EN DOUBLE de chaque message et devrait être retiré. 
+			**/
 			settings_errors();
 		?>
 		
