@@ -1,15 +1,13 @@
 /**
- * field-repeater.js
+ * field-repeater.js - Vanilla JS, sans dépendance jQuery ni autre bibliothèque
  *
- * Rôle unique de ce fichier : mécanique JS du repeater de blocs côté admin.
- * - Toggle accordéon (ouvrir/fermer un bloc)
+ * Rôle de ce fichier : mécanique JS du repeater de blocs côté admin.
+ * - Toggle accordéon (ouvrir /fermer un bloc)
  * - Ajout d'un nouveau bloc (clonage du <template>, id temporaire unique)
  * - Suppression d'un bloc (avec confirmation)
- * - Synchronisation en direct du titre affiché dans l'en-tête d'accordéon
+ * - Synchronisation en direct du titre affiché dans l'en-tête d'accordéon avec l'<input> éditable
  *
- * Vanilla JS, sans dépendance jQuery ni autre bibliothèque : ce fichier ne gère que la mécanique du repeater. 
  * L'initialisation de Select2 et de CodeMirror sur les champs nouvellement clonés est déclenchée via un événement custom ('chtw:block-added'), auquel code-editor.php et term-select.php (via les fichiers JS associés) s'abonnent indépendamment.
- * Ce fichier n'a pas à connaître leur existence.
  */
 
 ( function () {
