@@ -32,9 +32,9 @@ if ( ! defined( 'ABSPATH' ) ) exit; // sécurité : pas d'accès direct au fichi
  **/
 function chtw_get_sidebars_containing_widget() {
 
-	static $sidebars_with_widget = null;
+	static $sidebars_with_widget = null; // Cette variable static n'est initialisé qu'au premier appel de la fonction puis conservera sa valeur pendant toute la durée de la requête HTTP
 
-	if ( null !== $sidebars_with_widget ) {
+	if ( null !== $sidebars_with_widget ) { //Si non null alors le calcul a déjà eu lieu et on renvoie le résultat mémorisé
 		return $sidebars_with_widget;
 	}
 
@@ -44,16 +44,16 @@ function chtw_get_sidebars_containing_widget() {
     	return $sidebars_with_widget;
 	}
 
-	foreach ( wp_get_sidebars_widgets() as $sidebar_id => $widget_ids ) {
+	foreach ( wp_get_sidebars_widgets() as $sidebar_id => $widget_ids ) { // Attention, ici $sidebar_id est la clé mais la valeur est un tableau !
 
-		if ( 'wp_inactive_widgets' === $sidebar_id || ! is_array( $widget_ids ) ) {
-			continue; // zone des widgets inactifs : rien n'y est rendu côté front
+		if ( 'wp_inactive_widgets' === $sidebar_id || ! is_array( $widget_ids ) ) { // wp_inactive_widgets est la zone Wordpress des widgets orphelins, elle ne nous intéresse pas puisque ces Widgets ne seront pas affichés en front
+			continue;
 		}
 
-		foreach ( $widget_ids as $widget_id ) {
-			if ( 0 === strpos( $widget_id, 'chtw_widget-' ) ) {
-				$sidebars_with_widget[ $sidebar_id ] = true;
-				break; // une instance suffit, inutile de parcourir le reste de la zone
+		foreach ( $widget_ids as $widget_id ) { // Comme $widget_ids est un tableau il faut itérer dessus pour identifier les widgets préfixés "chtw_widget-" dans la zone de widgets courante
+			if ( 0 === strpos( $widget_id, 'chtw_widget-' ) ) { // Note : Possibilité d'utiliser str_starts_with() en PHP 8
+				$sidebars_with_widget[ $sidebar_id ] = true; // Le tableau créé à la zone de widgets en clé et ce booléen en valeur (arbitraire, fonctionnerait avec n'importe quoi d'autre). Résultat qui ressemble à : array( 'sidebar-1' => true, 'footer-1' => true )
+				break; // une instance suffit, inutile de parcourir le reste de la zone de widgets donc on break et on passe à la zone suivante
 			}
 		}
 	}
