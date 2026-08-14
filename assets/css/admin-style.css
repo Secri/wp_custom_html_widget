@@ -52,9 +52,19 @@
 	outline-offset: 2px;
 }
 
-.chtw-accordion-toggle-icon {
-	font-size: 11px;
-	width: 1em;
+/* Icône du bouton de bascule (dashicons-plus / dashicons-minus, échangés par field-repeater.js).
+
+   Sélecteur sur-spécifié (.chtw-accordion-toggle-icon.chtw-accordion-toggle-icon) plutôt qu'une
+   simple classe : .dashicons impose font-size, width, height et line-height, et à spécificité égale
+   c'est l'ordre de chargement des feuilles de style qui trancherait. On ne veut pas en dépendre.
+
+   Les quatre propriétés doivent être redéclarées ensemble : n'en surcharger qu'une laisserait les
+   autres aux 20px du jeu Dashicons, et l'icône serait décentrée dans sa boîte. */
+.chtw-accordion-toggle-icon.chtw-accordion-toggle-icon {
+	font-size: 18px;
+	width: 18px;
+	height: 18px;
+	line-height: 18px;
 	flex-shrink: 0;
 }
 
