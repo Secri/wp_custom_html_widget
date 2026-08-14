@@ -77,10 +77,31 @@
 			toggleAccordion( toggle );
 		} );
 
+		/**
+		 * Aligne l'icône du bouton de bascule sur l'état ouvert / fermé du bloc.
+		 *
+		 * L'icône est un dashicon : le glyphe n'est PAS le contenu texte de l'élément, il est injecté
+		 * par la classe dashicons-* via un pseudo-élément ::before. On échange donc les CLASSES, et
+		 * surtout pas le textContent — écrire dedans laisserait le pseudo-élément en place et
+		 * ajouterait du texte à côté du glyphe.
+		 *
+		 * @param {HTMLElement} toggle     Le bouton de bascule du bloc.
+		 * @param {boolean}     isExpanded État visé.
+		 */
+		function refreshToggleIcon( toggle, isExpanded ) {
+			const icon = toggle.querySelector( '.chtw-accordion-toggle-icon' );
+
+			if ( ! icon ) { //Mécanisme défensif - on ne présume pas de la présence de l'icône
+				return;
+			}
+
+			icon.classList.toggle( 'dashicons-minus', isExpanded ); //Pour lecond argument de toggle() on passe un booléen : force l'ajout si true, le retrait si false
+			icon.classList.toggle( 'dashicons-plus', ! isExpanded );
+		}
+
 		function toggleAccordion( toggle ) {
 			const row  = toggle.closest( '.chtw-accordion' );
 			const body = row.querySelector( '.chtw-accordion-body' );
-			const icon = toggle.querySelector( '.chtw-accordion-toggle-icon' );
 
 			const isExpanded = 'true' === toggle.getAttribute( 'aria-expanded' ); //Subtilité liée à getAttribute() qui renvoie un string et non un booléen ! Le résultat de cette comparaison sera donc un booléen => True si aria-expanded="true" et False dans le cas contraire
 
@@ -88,15 +109,11 @@
 			if ( isExpanded ) {
 				toggle.setAttribute( 'aria-expanded', 'false' );
 				body.style.display = 'none';
-				if ( icon ) {
-					icon.textContent = '▶';
-				}
+				refreshToggleIcon( toggle, false );
 			} else {
 				toggle.setAttribute( 'aria-expanded', 'true' );
 				body.style.display = 'block'; //'block' et NON '' : une chaîne vide RETIRE la déclaration inline, ce qui laisse s'appliquer le display:none de la feuille de style (cf .chtw-accordion-body dans admin-style.css) — le bloc resterait invisible
-				if ( icon ) {
-					icon.textContent = '▼';
-				}
+				refreshToggleIcon( toggle, true );
 
 				// Le bloc vient de devenir visible : on prévient les scripts qui greffent des
 				// composants ayant besoin de mesurer leurs dimensions (CodeMirror se rend avec une
@@ -441,10 +458,7 @@
 
 				toggle.setAttribute( 'aria-expanded', 'true' ); //On signale que l'accordéon est déplié
 				body.style.display = 'block'; //'block' et NON '' : une chaîne vide RETIRE la déclaration inline, ce qui laisse s'appliquer le display:none de la feuille de style (cf .chtw-accordion-body dans admin-style.css) — le bloc resterait invisible
-				const icon = toggle.querySelector( '.chtw-accordion-toggle-icon' ); //On met la bonne icone qui indique que l'accordéon est déplié
-				if ( icon ) {
-					icon.textContent = '▼';
-				}
+				refreshToggleIcon( toggle, true ); //On met la bonne icône en indiquant que l'accordéon est déplié avec true
 			}
 
 			blocksList.appendChild( fragment ); //La navigateur "déballe" le contenu du fragment et insère donc l'accordéon dans la liste des blocs - A noter que blocksList.appendChild( newRow ); aurait fonctionné aussi
