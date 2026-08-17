@@ -34,7 +34,7 @@
 	// Gestion des labels avec valeurs de repli en dur
 	const labels = {
 		noTitle:       repeaterData.noTitleLabel || '(Bloc sans titre)', 
-		confirmRemove: repeaterData.confirmRemoveLabel || 'Supprimer ce bloc ? Cette action est irréversible une fois les modifications enregistrées.',
+		confirmRemove: repeaterData.confirmRemoveLabel || 'Supprimer ce bloc ? Cette action sera irréversible une fois les modifications enregistrées.',
 	};
 
 	document.addEventListener( 'DOMContentLoaded', () => { //On s'assure que le DOM est bien chargé
