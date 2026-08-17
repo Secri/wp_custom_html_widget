@@ -56,7 +56,7 @@ function chtw_enqueue_admin_assets( $hook_suffix ) {
 		'chtwRepeaterData', //Nom de la variable globale qui sera envoyée au fichier JS
 		array( //Contenu de la variable chtwRepeaterData
 			'noTitleLabel'       => __( '(Bloc sans titre)', 'chtw' ),
-			'confirmRemoveLabel' => __( 'Supprimer ce bloc ? Cette action est irréversible une fois les modifications enregistrées.', 'chtw' ),
+			'confirmRemoveLabel' => __( 'Supprimer ce bloc ? Cette action sera irréversible une fois les modifications enregistrées.', 'chtw' ),
 		)
 	);
 
