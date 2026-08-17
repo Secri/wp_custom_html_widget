@@ -105,7 +105,7 @@
 			}
 
 			event.preventDefault();
-			event.returnValue = ''; //Valeur sans importance : seule sa présence compte
+			event.returnValue = true; //Valeur de repli pour les anciens navigateurs : doit être truthy
 		} );
 
 		/* ------------------------------------------------------------
