@@ -68,6 +68,23 @@
 
 		$select.addClass( 'chtw-select2-initialized' ); //On ajoute cette classe pour identifier les elements pour lesquels le Select2 est activé
 
+		// Relais vers field-repeater.js, qui s'en sert pour marquer le formulaire comme modifié et
+		// avertir avant de quitter la page sans enregistrer.
+		//
+		// L'écoute passe par jQuery, et pas par addEventListener : Select2 signale ses changements
+		// avec trigger(), qui exécute les gestionnaires jQuery sans émettre d'événement DOM natif
+		// pour 'change'. Vérifié en conditions réelles — un écouteur natif en phase de capture, donc
+		// prioritaire, ne voit rien passer sur ce select.
+		//
+		// 'change' plutôt que 'select2:select' / 'select2:unselect' : il couvre en plus la remise à
+		// zéro programmatique déclenchée par un changement de taxonomie ci-dessous, qui efface les
+		// termes sélectionnés et constitue bien une modification du formulaire.
+		//
+		// Aucun risque de faux positif à l'initialisation : Select2 n'émet rien à ce moment-là.
+		$select.on( 'change', () => {
+			document.dispatchEvent( new CustomEvent( 'chtw:form-changed' ) );
+		} );
+
 		// Tant qu'aucune taxonomie n'est choisie, le select de termes reste
 		// désactivé : chercher un terme sans savoir dans quelle taxonomie
 		// n'aurait pas de sens (cf handler AJAX, qui exige une taxonomie valide).
