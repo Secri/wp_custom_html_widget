@@ -56,6 +56,7 @@
 		// Passe à true dès la première modification, revient à false à l'enregistrement.
 		let isDirty = false;
 
+		// Le flag ne redescend qu'à l'enregistrement, jamais via un retour à l'état initial : ajouter puis supprimer un bloc vide laisse le formulaire taggé comme "modifié". Faux positif assumé
 		function markDirty() {
 			isDirty = true;
 		}
