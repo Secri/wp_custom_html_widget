@@ -48,6 +48,66 @@
 		}
 
 		/* ------------------------------------------------------------
+		 * 0. Protection contre la perte des modifications non enregistrées
+		 * ---------------------------------------------------------- */
+
+		const form = blocksList.closest( 'form' );
+
+		// Passe à true dès la première modification, revient à false à l'enregistrement.
+		let isDirty = false;
+
+		function markDirty() {
+			isDirty = true;
+		}
+
+		if ( form ) { //Mécanisme défensif - sans formulaire, la garde n'aurait aucun sens
+
+			// Champs NATIFS uniquement : titre, zone de widgets, taxonomie, case "inclure les enfants".
+			// Ces deux événements remontent jusqu'au formulaire, une écoute déléguée suffit donc.
+			//
+			// Deux sources ne passent PAS par ici et disposent de leur propre relais (cf plus bas,
+			// écoute de 'chtw:form-changed') :
+			// - le select de termes, piloté par Select2, qui signale ses changements avec la méthode
+			//   jQuery trigger(). Celle-ci exécute les gestionnaires jQuery mais n'émet aucun
+			//   événement DOM natif pour 'change' — vérifié en conditions réelles, un écouteur natif
+			//   en phase de capture ne voit rien passer.
+			// - CodeMirror, qui modifie son document par script. Seule la frappe de caractères
+			//   produit un 'input' natif ; les suppressions, collages, annulations et rétablissements
+			//   n'en produisent aucun.
+			form.addEventListener( 'input', markDirty );
+			form.addEventListener( 'change', markDirty );
+
+			// L'enregistrement n'est pas une perte : sans cette remise à zéro, la navigation vers
+			// options.php déclencherait l'alerte à chaque sauvegarde. Un faux positif à cet endroit
+			// suffirait à apprendre à l'utilisateur à ignorer la boîte de dialogue.
+			form.addEventListener( 'submit', () => {
+				isDirty = false;
+			} );
+		}
+
+		// Relais émis par term-select-init.js et code-editor-init.js pour les modifications que les
+		// écouteurs ci-dessus ne peuvent pas voir. Ce fichier ignore qui émet, comme pour
+		// 'chtw:block-added'.
+		document.addEventListener( 'chtw:form-changed', markDirty );
+
+		// Affiche l'avertissement natif du navigateur avant de quitter la page.
+		//
+		// Le texte est imposé par le navigateur : toute chaîne personnalisée est ignorée depuis
+		// Chrome 51 et Firefox 44. On ne contrôle que le déclenchement.
+		//
+		// Les deux instructions sont nécessaires : preventDefault() correspond à la spécification
+		// actuelle, returnValue à l'ancienne, encore attendue par certains moteurs.
+		window.addEventListener( 'beforeunload', ( event ) => {
+
+			if ( ! isDirty ) {
+				return; // rien à signaler, la navigation se fait sans interruption
+			}
+
+			event.preventDefault();
+			event.returnValue = ''; //Valeur sans importance : seule sa présence compte
+		} );
+
+		/* ------------------------------------------------------------
 		 * 1. Toggle accordéon (délégation d'événement sur la liste,
 		 *    pour couvrir aussi les blocs ajoutés dynamiquement)
 		 * ---------------------------------------------------------- */
@@ -318,6 +378,7 @@
 			refreshMoveButtonsState(); //On met à jour l'état des boutons monter /descendre
 			refreshAddButtonState(); //On réactive le bouton "Ajouter" si on repasse sous la limite
 			refreshEmptyState(); //On réaffiche le message d'invite si on vient de supprimer le dernier bloc
+			markDirty(); //Retirer un bloc est une manipulation du DOM : aucun 'input' ni 'change' n'est émis, le drapeau doit être levé explicitement
 		} );
 
 		/* ------------------------------------------------------------
@@ -393,6 +454,8 @@
 			document.dispatchEvent( new CustomEvent( 'chtw:block-moved', {
 				detail: { blockElement: row }
 			} ) );
+
+			markDirty(); //Idem : réordonner change l'ordre d'affichage en front, c'est bien une modification
 		} );
 
 		/* ------------------------------------------------------------
@@ -453,6 +516,7 @@
 			refreshMoveButtonsState(); //on met à jour l'état des boutons Monter /Descendre
 			refreshAddButtonState(); //On désactive le bouton "Ajouter" si on vient d'atteindre la limite
 			refreshEmptyState(); //On masque le message d'invite, devenu obsolète dès le premier bloc
+			markDirty(); //Idem : l'insertion d'un bloc n'émet aucun événement de saisie
 			refreshIncludeChildrenState( newRow ); //Aucune taxonomie n'est encore choisie : la case part désactivée
 
 			// On utilise dispatchEvent() pour créer un événement afin de prévenir les fichiers JS qui gèrent les dépendances (Select2, CodeMirror) qu'un nouveau bloc vient d'être inséré dans le DOM
