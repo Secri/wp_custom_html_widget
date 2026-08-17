@@ -57,6 +57,21 @@
 
 		const editor = wp.codeEditor.initialize( textarea.id, chtwCodeEditorSettings );
 
+		// Relais vers field-repeater.js, qui s'en sert pour marquer le formulaire comme modifié et
+		// avertir avant de quitter la page sans enregistrer.
+		//
+		// On passe par l'API de l'instance et non par les événements DOM : CodeMirror modifie son
+		// document par script, seule la frappe de caractères produit un 'input' natif. Les
+		// suppressions, collages, annulations et rétablissements n'en produisent aucun — vérifié en
+		// conditions réelles, les origines '+delete', 'paste', 'undo' et 'redo' ne remontent que par
+		// cet événement.
+		//
+		// Aucun filtrage sur changeObj.origin n'est nécessaire : la création de l'éditeur avec sa
+		// valeur initiale n'émet pas de 'change', le dépliage d'un bloc ne lève donc aucun faux positif.
+		editor.codemirror.on( 'change', function () {
+			document.dispatchEvent( new CustomEvent( 'chtw:form-changed' ) );
+		} );
+
 		editors.set( textarea, editor );
 		textarea.classList.add( 'chtw-codemirror-initialized' ); //Repère visuel pour l'inspection du DOM, la source de vérité reste la WeakMap
 	}
