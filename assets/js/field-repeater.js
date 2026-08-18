@@ -6,6 +6,7 @@
  * - Ajout d'un nouveau bloc (clonage du <template>, id temporaire unique)
  * - Suppression d'un bloc (avec confirmation)
  * - Synchronisation en direct du titre affiché dans l'en-tête d'accordéon avec l'<input> éditable
+ * - Gestion du beforeunload
  *
  * L'initialisation de Select2 et de CodeMirror sur les champs nouvellement clonés est déclenchée via un événement custom ('chtw:block-added'), auquel code-editor.php et term-select.php (via les fichiers JS associés) s'abonnent indépendamment.
  */
@@ -14,10 +15,9 @@
 	'use strict';
 
 	// Compteur local, purement côté client, pour générer des id temporaires uniques ('new_1', 'new_2'...) sur les blocs fraîchement ajoutés. 
-	// Il repart de zéro à chaque chargement de page : il ne sert qu'à distinguer les nouveaux blocs ENTRE EUX le temps de la session en cours.
+	// Variable est réassignée à chaque ajout de bloc : ne sert qu'à distinguer les nouveaux blocs ENTRE EUX le temps de la session en cours.
 	// L'id définitif ('widget_N') est attribué côté PHP uniquement à la sauvegarde (cf chtw_sanitize_blocks() dans settings.php).
-	
-	let newBlockCounter = 0; // Variable est réassignée à chaque ajout de bloc.
+	let newBlockCounter = 0;
 
 	/**
 	 * Libellés (titre par défaut et msg de confirmation) injectés par wp_localize_script() (cf admin/enqueue.php) sous forme d'un tableau chtwReapeaterData en variable globale.
@@ -37,75 +37,61 @@
 		confirmRemove: repeaterData.confirmRemoveLabel || 'Supprimer ce bloc ? Cette action sera irréversible une fois les modifications enregistrées.',
 	};
 
-	document.addEventListener( 'DOMContentLoaded', () => { //On s'assure que le DOM est bien chargé
+	document.addEventListener( 'DOMContentLoaded', () => { // On s'assure que le DOM est bien chargé pour l'ensemble des instructions qui vont suivre
 
 		const blocksList = document.getElementById( 'chtw-blocks-list' ); // On récupère la liste de tous les blocs existants au chargement - IMPORTANT parce que c'est sur cette liste qu'on va ajouter tous les écouteurs !
 		const addButton  = document.getElementById( 'chtw-add-block' );
 		const template   = document.getElementById( 'chtw-block-template' ); // On va chercher <template id="chtw-bloc-template"> qu'on utilise pour créer les nouveaux blocs
 
-		if ( ! blocksList || ! addButton || ! template ) {
-			return; // page pas dans l'état attendu, on n'installe aucun handler
+		if ( ! blocksList || ! addButton || ! template ) { // page pas dans l'état attendu ? On n'installe aucun handler.
+			return;
 		}
 
-		/* ------------------------------------------------------------
+		/* ----------------------------------------------------------------
 		 * 0. Protection contre la perte des modifications non enregistrées
-		 * ---------------------------------------------------------- */
+		 * ------------------------------------------------------------- */
 
 		const form = blocksList.closest( 'form' );
 
-		// Passe à true dès la première modification, revient à false à l'enregistrement.
-		let isDirty = false;
+		let isDirty = false; // Passe à true dès la première modification, revient à false à l'enregistrement.
 
-		// Le flag ne redescend qu'à l'enregistrement, jamais via un retour à l'état initial : ajouter puis supprimer un bloc vide laisse le formulaire taggé comme "modifié". Faux positif assumé
+		// Le flag ne redescend qu'à l'enregistrement, jamais via un retour à l'état initial : ajouter puis supprimer un bloc vide laisse le formulaire taggé comme "modifié". Faux positif assumé.
 		function markDirty() {
 			isDirty = true;
 		}
 
-		if ( form ) { //Mécanisme défensif - sans formulaire, la garde n'aurait aucun sens
+		if ( form ) { //Mécanisme défensif - sans formulaire à submit, ce dispositif n'aurait aucun sens
 
-			// Champs NATIFS uniquement : titre, zone de widgets, taxonomie, case "inclure les enfants".
+			// Champs NATIFS uniquement : titre, zone de widgets, taxonomie, checkbox "inclure les enfants".
 			// Ces deux événements remontent jusqu'au formulaire, une écoute déléguée suffit donc.
 			//
-			// Deux sources ne passent PAS par ici et disposent de leur propre relais (cf plus bas,
-			// écoute de 'chtw:form-changed') :
-			// - le select de termes, piloté par Select2, qui signale ses changements avec la méthode
-			//   jQuery trigger(). Celle-ci exécute les gestionnaires jQuery mais n'émet aucun
-			//   événement DOM natif pour 'change' — vérifié en conditions réelles, un écouteur natif
-			//   en phase de capture ne voit rien passer.
-			// - CodeMirror, qui modifie son document par script. Seule la frappe de caractères
-			//   produit un 'input' natif ; les suppressions, collages, annulations et rétablissements
-			//   n'en produisent aucun.
+			// Deux sources ne passent PAS par ici et disposent de leur propre relais (custom event 'chtw:form-changed') :
+			// - la selection des termes, piloté par Select2, qui signale ses changements avec la méthode jQuery trigger().
+			//   Celle-ci exécute les gestionnaires jQuery mais n'émet aucun événement DOM natif pour 'change'.
+			// - CodeMirror, seul un keydwon produit un événement 'input' natif ; les suppressions, collages, annulations et rétablissements n'en produisent aucun.
 			form.addEventListener( 'input', markDirty );
 			form.addEventListener( 'change', markDirty );
 
-			// L'enregistrement n'est pas une perte : sans cette remise à zéro, la navigation vers
-			// options.php déclencherait l'alerte à chaque sauvegarde. Un faux positif à cet endroit
-			// suffirait à apprendre à l'utilisateur à ignorer la boîte de dialogue.
+			// L'enregistrement n'est pas une perte : sans cette remise à zéro, la soumission déclencherait l'alerte à chaque sauvegarde.
 			form.addEventListener( 'submit', () => {
 				isDirty = false;
 			} );
 		}
 
-		// Relais émis par term-select-init.js et code-editor-init.js pour les modifications que les
-		// écouteurs ci-dessus ne peuvent pas voir. Ce fichier ignore qui émet, comme pour
-		// 'chtw:block-added'.
+		// Relais émis par term-select-init.js et code-editor-init.js pour les modifications que les écouteurs ci-dessus ne peuvent pas voir.
 		document.addEventListener( 'chtw:form-changed', markDirty );
 
 		// Affiche l'avertissement natif du navigateur avant de quitter la page.
-		//
-		// Le texte est imposé par le navigateur : toute chaîne personnalisée est ignorée depuis
-		// Chrome 51 et Firefox 44. On ne contrôle que le déclenchement.
-		//
-		// Les deux instructions sont nécessaires : preventDefault() correspond à la spécification
-		// actuelle, returnValue à l'ancienne, encore attendue par certains moteurs.
+		// Le texte est imposé par le navigateur : toute chaîne personnalisée est ignorée depuis Chrome 51 et Firefox 44. On ne contrôle que le déclenchement.
 		window.addEventListener( 'beforeunload', ( event ) => {
 
 			if ( ! isDirty ) {
 				return; // rien à signaler, la navigation se fait sans interruption
 			}
 
-			event.preventDefault();
-			event.returnValue = true; //Valeur de repli pour les anciens navigateurs : doit être truthy
+			event.preventDefault(); // Spécification actuelle des navigateurs modernes
+			event.returnValue = true; // Valeur de repli pour les anciens navigateurs : doit être truthy
+			
 		} );
 
 		/* ------------------------------------------------------------
