@@ -3,9 +3,8 @@
  *
  * Rôle unique de ce fichier : initialiser CodeMirror (wp.codeEditor) sur les champs .chtw-html-editor.
  *
- * L'initialisation est PARESSEUSE : elle a lieu au premier affichage réel du bloc, jamais au
- * chargement de la page. Les blocs sont repliés par défaut (display:none), or CodeMirror mesure son
- * conteneur à l'initialisation et se rend avec une hauteur nulle s'il est masqué à ce moment-là.
+ * Initialisation PARESSEUSE : elle a lieu au premier affichage réel du bloc, jamais au chargement de la page. 
+ * Les blocs sont repliés par défaut (display:none), or CodeMirror mesure son conteneur à l'initialisation et se rend avec une hauteur nulle s'il est masqué à ce moment-là.
  *
  * Ce fichier s'abonne à trois événements custom émis par field-repeater.js :
  * - 'chtw:block-added'    → bloc inséré déjà déplié, donc visible : initialisation immédiate
