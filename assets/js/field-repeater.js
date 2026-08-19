@@ -6,7 +6,7 @@
  * - Ajout d'un nouveau bloc (clonage du <template>, id temporaire unique)
  * - Suppression d'un bloc (avec confirmation)
  * - Synchronisation en direct du titre affiché dans l'en-tête d'accordéon avec l'<input> éditable
- * - Gestion du beforeunload
+ * - Gestion du beforeunload avec abonnement au custom even 'chtw:form-changed' émis par code-editor-init.js et term-select-invit.js
  *
  * L'initialisation de Select2 et de CodeMirror sur les champs nouvellement clonés est déclenchée via un événement custom ('chtw:block-added'), auquel code-editor.php et term-select.php (via les fichiers JS associés) s'abonnent indépendamment.
  */
