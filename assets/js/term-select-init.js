@@ -68,13 +68,11 @@
 
 		$select.addClass( 'chtw-select2-initialized' ); //On ajoute cette classe pour identifier les elements pour lesquels le Select2 est activé
 
-		// Relais vers field-repeater.js, qui s'en sert pour marquer le formulaire comme modifié et
-		// avertir avant de quitter la page sans enregistrer.
+		// Relais vers field-repeater.js, qui s'en sert pour marquer le formulaire comme modifié et avertir avant de quitter la page sans enregistrer.
 		//
 		// L'écoute passe par jQuery, et pas par addEventListener : Select2 signale ses changements
-		// avec trigger(), qui exécute les gestionnaires jQuery sans émettre d'événement DOM natif
-		// pour 'change'. Vérifié en conditions réelles — un écouteur natif en phase de capture, donc
-		// prioritaire, ne voit rien passer sur ce select.
+		// avec trigger(), qui exécute les gestionnaires jQuery sans émettre d'événement DOM natif pour 'change'. 
+		// Vérifié en conditions réelles : un écouteur natif en phase de capture, donc prioritaire, ne voit rien passer sur ce select.
 		//
 		// 'change' plutôt que 'select2:select' / 'select2:unselect' : il couvre en plus la remise à
 		// zéro programmatique déclenchée par un changement de taxonomie ci-dessous, qui efface les
@@ -100,8 +98,7 @@
 	}
 
 	/**
-	 * Active ou désactive le select de termes selon qu'une taxonomie est
-	 * actuellement choisie ou non dans le select adjacent.
+	 * Active ou désactive le select de termes selon qu'une taxonomie est actuellement choisie ou non dans le select adjacent.
 	 *
 	 * @param {jQuery} $taxonomySelect
 	 * @param {jQuery} $termSelect
@@ -114,10 +111,9 @@
 	$( function () { //Equivalent à document.addEventListener('DOMContentLoaded', ...)
 
 		// 1. Blocs déjà présents au chargement de la page.
-		// Note : function() classique volontairement conservée ici (pas de
-		// fonction fléchée) — jQuery .each() lie 'this' à l'élément DOM courant
-		// de l'itération, ce que initSelect2On(this) exploite directement. Une
-		// fonction fléchée n'aurait pas son propre 'this' et casserait cet appel.
+		// Note : function() classique volontairement conservée ici.
+		// jQuery .each() lie 'this' à l'élément DOM courant de l'itération, ce que initSelect2On( this ); exploite directement. 
+		// Une fonction fléchée n'aurait pas son propre 'this' et casserait cet appel.
 		$( '.chtw-term-select' ).each( function () {
 			initSelect2On( this );
 		} );
