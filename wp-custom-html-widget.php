@@ -37,7 +37,7 @@ define( 'CHTW_PLUGIN_URL', plugin_dir_url( __FILE__ ) );   // URL publique, pour
 define( 'CHTW_VERSION', '0.1.0' );
 
 /**
- * Retourne le paramètre de version à passer à wp_enqueue_style() / wp_enqueue_script() pour un asset.
+ * Retourne le paramètre de version à passer à wp_enqueue_style() / wp_enqueue_script()
  *
  * Retourne la date de dernière modification du fichier (cache busting automatique : l'URL générée
  * change dès que le fichier est modifié, ce qui force le navigateur à le retélécharger au lieu de
@@ -46,10 +46,6 @@ define( 'CHTW_VERSION', '0.1.0' );
  * Ce repli évite qu'un déploiement incomplet ne remplisse le journal d'erreurs de warnings
  * « stat failed » — filemtime() n'échoue pas silencieusement, elle émet un warning et retourne
  * false, valeur que WordPress traduit ensuite par sa propre version dans l'URL de l'asset.
- *
- * Définie dans ce fichier et non dans admin/enqueue.php : elle est utilisée aussi par
- * admin/term-select.php et admin/code-editor.php, et la loger dans l'un d'eux recréerait la
- * dépendance implicite à l'ordre des require_once que la centralisation vient de supprimer.
  *
  * @param string $relative_path Chemin depuis la racine du plugin, ex: 'assets/js/field-repeater.js'
  * @return string|int Timestamp Unix, ou CHTW_VERSION si le fichier est absent.
