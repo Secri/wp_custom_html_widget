@@ -30,9 +30,7 @@ define( 'CHTW_PLUGIN_URL', plugin_dir_url( __FILE__ ) );   // URL publique, pour
 /**
  * Version du plugin.
  *
- * ATTENTION : doit rester synchronisée manuellement avec l'en-tête « Version: » ci-dessus, qui est
- * la seule source lue par WordPress. La lire dynamiquement imposerait get_plugin_data(), qui charge
- * des fichiers d'administration et n'est pas disponible en front — remède pire que le mal ici.
+ * ATTENTION : doit rester synchronisée manuellement avec l'en-tête « Version: ».
  *
  * Sert uniquement de repli à chtw_asset_version().
  */
