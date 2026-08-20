@@ -19,15 +19,9 @@ if ( ! defined( 'ABSPATH' ) ) exit; // sécurité : pas d'accès direct au fichi
 /* ------------------------------------------------------------------------
  * Chemins du plugin
  *
- * Calculés une seule fois, ici, à partir de __FILE__ — le seul repère fiable, puisque ce fichier
- * ne bougera jamais de la racine du plugin. Les fichiers de admin/ utilisaient auparavant
- * plugin_dir_url( __DIR__ ) et plugin_dir_path( __DIR__ ), qui remontent d'un niveau depuis leur
- * propre emplacement : correct tant qu'ils restent dans un sous-dossier de premier niveau, mais
- * silencieusement faux dès qu'un fichier change de profondeur (admin/partials/, includes/admin/...).
- * L'erreur ne serait pas détectée au chargement — juste des assets en 404.
+ * Calculés une seule fois, ici, à partir de __FILE__ — le seul repère fiable, puisque ce fichier ne bougera jamais de la racine du plugin.
  *
- * Les deux fonctions WordPress retournent un slash final : les chemins relatifs se concatènent
- * donc directement, sans séparateur.
+ * Les deux fonctions WordPress retournent un slash final : les chemins relatifs se concatènent donc directement, sans séparateur.
  * ---------------------------------------------------------------------- */
 
 define( 'CHTW_PLUGIN_PATH', plugin_dir_path( __FILE__ ) ); // chemin serveur, pour require_once et filemtime()
